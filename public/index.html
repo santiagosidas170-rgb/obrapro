@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101215">
+  <meta name="color-scheme" content="dark">
+  <meta name="description" content="ObraPro: levantamientos de obra y remodelación, sin conexión.">
+  <title>ObraPro</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="favicon.ico" sizes="48x48">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="preload" href="fonts/lato-400.woff" as="font" type="font/woff" crossorigin>
+  <link rel="preload" href="fonts/lato-700.woff" as="font" type="font/woff" crossorigin>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <nav class="sidenav" id="nav" aria-label="Menú principal">
+      <div class="brand"><img src="favicon.svg" alt="" width="34" height="34"><span>ObraPro</span></div>
+      <a href="#/proyectos" data-view="proyectos">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h7l2 2h9v11H3z"/></svg><span>Proyectos</span></a>
+      <a href="#/catalogo" data-view="catalogo">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14M5 12h14M5 19h14"/></svg><span>Catálogo</span></a>
+      <a href="#/archivados" data-view="archivados">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v4H3zM5 9v10h14V9M10 13h4"/></svg><span>Archivados</span></a>
+      <a href="#/ajustes" data-view="ajustes">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg><span>Ajustes</span></a>
+    </nav>
+    <main id="main" tabindex="-1"><div class="loading"><span class="spinner" aria-hidden="true"></span>Cargando…</div></main>
+  </div>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <dialog id="dlg">
+    <form method="dialog">
+      <h2 id="dlg-title"></h2>
+      <p id="dlg-msg"></p>
+      <div class="dlg-actions">
+        <button value="cancel" class="btn">Cancelar</button>
+        <button value="ok" id="dlg-ok" class="btn danger">Aceptar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <noscript>ObraPro necesita JavaScript activado.</noscript>
+  <script src="calc.js"></script>
+  <script src="db.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

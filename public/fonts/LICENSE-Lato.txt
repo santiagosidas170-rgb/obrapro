@@ -1,0 +1,8 @@
+Lato
+Copyright (c) 2011-2015 by tyPoland Lukasz Dziedzic (http://www.typoland.com/)
+with Reserved Font Name "Lato".
+
+Licensed under the SIL Open Font License, Version 1.1.
+Texto completo: https://openfontlicense.org/open-font-license-official-text/
+
+Estos archivos son una versión recortada (solo alfabeto latino) de Lato 2.015.
