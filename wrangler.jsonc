@@ -1,0 +1,8 @@
+{
+  // Cloudflare Workers: sitio estático. Todo lo que está en "public" se publica.
+  "name": "obrapro",
+  "compatibility_date": "2026-06-19",
+  "assets": {
+    "directory": "./public"
+  }
+}
