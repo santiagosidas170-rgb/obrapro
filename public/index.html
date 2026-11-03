@@ -70,9 +70,28 @@
     </form>
   </dialog>
 
+  <dialog id="dlg-texto">
+    <form method="dialog">
+      <h2 id="dlg-texto-title"></h2>
+      <label class="field"><span id="dlg-texto-label"></span>
+        <input id="dlg-texto-input" type="text" autocomplete="off" maxlength="60"></label>
+      <div class="chips" role="group" aria-label="Unidades rápidas">
+        <button type="button" class="chip sugerencia" data-t="m">m</button>
+        <button type="button" class="chip sugerencia" data-t="cm">cm</button>
+        <button type="button" class="chip sugerencia" data-t="mm">mm</button>
+        <button type="button" class="chip sugerencia" data-t="m²">m²</button>
+      </div>
+      <div class="dlg-actions">
+        <button value="cancel" class="btn">Cancelar</button>
+        <button type="button" id="dlg-texto-ok" class="btn primary">Aceptar</button>
+      </div>
+    </form>
+  </dialog>
+
   <noscript>ObraPro necesita JavaScript activado.</noscript>
   <script src="calc.js"></script>
   <script src="db.js"></script>
+  <script src="fotos.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

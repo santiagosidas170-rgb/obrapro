@@ -3,7 +3,7 @@
 Aplicación web progresiva (PWA) para levantamientos de obra y remodelación.
 Funciona sin internet y guarda los datos solo en el dispositivo.
 
-**Versión:** 0.6.0 (logo y paleta)
+**Versión:** 0.7.0 (Etapa 5: fotos)
 
 > Las medidas son capturadas por el usuario y deben verificarse en campo.
 
@@ -14,7 +14,9 @@ Funciona sin internet y guarda los datos solo en el dispositivo.
 - Espacios por proyecto: rectangulares o irregulares (tramos que suman o restan).
 - Unidades: metros, centímetros y pies (todo se convierte a metros antes de calcular).
 - Superficie de piso, perímetro y superficie bruta de muros.
-- Guardado automático en el dispositivo (IndexedDB) y copia de seguridad (descargar, compartir, restaurar).
+- Fotos: tomar con la cámara o elegir de la galería, comprimidas (máx. 1600 px) y asociadas a un proyecto y a un espacio, con descripción y tipo (general, daño, acabado, instalación).
+- Dibujo de medidas sobre cada foto (líneas con su valor y notas de texto, 4 colores, mover, ajustar extremos, deshacer). La foto original no cambia; se puede guardar o compartir una imagen con las medidas dibujadas.
+- Guardado automático en el dispositivo (IndexedDB) y copia de seguridad que incluye las fotos (descargar, compartir, restaurar).
 - Funcionamiento sin conexión (Service Worker).
 - Pantalla de bienvenida con el logo (toca para saltarla) y paleta tomada del logo: grafito cálido y bronce `#9f7a5a`.
 - Tipografía Lato (incluida en la app), adaptable a celular y tablet, con animaciones suaves que se desactivan
@@ -28,7 +30,8 @@ public/             Todo lo que se publica
   index.html        Estructura de la app
   styles.css        Diseño
   calc.js           Fórmulas de medidas y dinero
-  db.js             Guardado local y copias de seguridad
+  db.js             Guardado local y copias de seguridad (con fotos)
+  fotos.js          Fotos: captura, galería y dibujo de medidas
   app.js            Pantallas y navegación
   sw.js             Funcionamiento sin internet
   manifest.json     Instalación en la pantalla de inicio
