@@ -3,7 +3,7 @@
 Aplicación web progresiva (PWA) para levantamientos de obra y remodelación.
 Funciona sin internet y guarda los datos solo en el dispositivo.
 
-**Versión:** 0.5.0 (rediseño grafito)
+**Versión:** 0.6.0 (logo y paleta)
 
 > Las medidas son capturadas por el usuario y deben verificarse en campo.
 
@@ -16,8 +16,9 @@ Funciona sin internet y guarda los datos solo en el dispositivo.
 - Superficie de piso, perímetro y superficie bruta de muros.
 - Guardado automático en el dispositivo (IndexedDB) y copia de seguridad (descargar, compartir, restaurar).
 - Funcionamiento sin conexión (Service Worker).
-- Diseño en tema grafito con tipografía Lato (incluida en la app), adaptable a celular y tablet,
-  con animaciones suaves que se desactivan si el dispositivo pide "reducir movimiento".
+- Pantalla de bienvenida con el logo (toca para saltarla) y paleta tomada del logo: grafito cálido y bronce `#9f7a5a`.
+- Tipografía Lato (incluida en la app), adaptable a celular y tablet, con animaciones suaves que se desactivan
+  si el dispositivo pide "reducir movimiento".
 
 ## Estructura
 
@@ -32,7 +33,8 @@ public/             Todo lo que se publica
   sw.js             Funcionamiento sin internet
   manifest.json     Instalación en la pantalla de inicio
   _headers          Encabezados de seguridad y caché en Cloudflare
-  favicon.*, icon-*.png, apple-touch-icon.png   Íconos
+  logo.png, logo-sm.png                       Logo con fondo transparente (color #9f7a5a)
+  favicon.ico, favicon-32.png, icon-*.png, apple-touch-icon.png   Íconos con el logo
   fonts/            Lato (licencia SIL OFL 1.1)
 ```
 

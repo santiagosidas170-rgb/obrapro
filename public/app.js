@@ -3,14 +3,12 @@
    guardado local y copia de seguridad. */
 'use strict';
 
-const VERSION_APP = '0.5.0 (rediseño grafito)';
+const VERSION_APP = '0.6.0 (logo y paleta)';
 
 /* Íconos dibujados (la tipografía Lato no incluye ✓ ni ✕) */
 const ICONO_CHECK = '<svg class="ico-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>';
 const ICONO_X = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
-const ICONO_CASA = `<svg class="empty-ico" viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M14 32L32 16l18 16M19 29v18h26V29" stroke="#9aa3ae" stroke-width="3.5"/>
-  <rect x="12" y="51" width="40" height="6" rx="1.5" fill="#f2923d"/></svg>`;
+const ICONO_CASA = '<img class="empty-ico" src="logo-sm.png" alt="" width="84" height="87">';
 let _tramoNuevo = -1;
 
 const ESTADOS = [
