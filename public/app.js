@@ -3,7 +3,7 @@
    guardado local y copia de seguridad. */
 'use strict';
 
-const VERSION_APP = '0.7.0 (Etapa 5: fotos)';
+const VERSION_APP = '0.8.0 (Etapa 6: presupuesto)';
 
 /* Íconos dibujados (la tipografía Lato no incluye ✓ ni ✕) */
 const ICONO_CHECK = '<svg class="ico-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>';
@@ -139,7 +139,7 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) guard
 window.addEventListener('pagehide', () => { guardarPendiente(); });
 
 /* Ajustes en memoria */
-let ajustes = { id: 'app', unidad: 'm', responsable: '', ultimoRespaldo: null };
+let ajustes = { id: 'app', unidad: 'm', responsable: '', ultimoRespaldo: null, ppIndirectos: 0, ppUtilidad: 0, ppIva: 16 };
 async function cargarAjustes() {
   const a = await dbObtener('ajustes', 'app');
   if (a) ajustes = Object.assign(ajustes, a);
@@ -194,7 +194,9 @@ async function enrutar() {
       case 'proyecto': await vistaProyecto(id, pestana || 'datos'); break;
       case 'espacio': await vistaEspacio(id); break;
       case 'foto': await vistaFoto(id); break;
-      case 'catalogo': vistaCatalogo(); break;
+      case 'partida': await vistaPartida(id); break;
+      case 'concepto': await vistaConcepto(id); break;
+      case 'catalogo': await vistaCatalogo(); break;
       case 'ajustes': await vistaAjustes(); break;
       default: location.hash = '#/proyectos'; return;
     }
@@ -215,7 +217,7 @@ async function enrutar() {
 }
 
 function marcarMenu(vista) {
-  const mapa = { proyecto: 'proyectos', espacio: 'proyectos', foto: 'proyectos', nuevo: 'proyectos' };
+  const mapa = { proyecto: 'proyectos', espacio: 'proyectos', foto: 'proyectos', partida: 'proyectos', concepto: 'catalogo', nuevo: 'proyectos' };
   const activo = mapa[vista] || vista;
   $$('#nav a[data-view]').forEach(a => {
     const on = a.dataset.view === activo;
@@ -387,8 +389,8 @@ const PESTANAS = [
   ['datos', 'Datos', true],
   ['espacios', 'Espacios', true],
   ['fotos', 'Fotos', true],
-  ['conceptos', 'Conceptos', false],
-  ['presupuesto', 'Presupuesto', false],
+  ['conceptos', 'Conceptos', true],
+  ['presupuesto', 'Presupuesto', true],
   ['reporte', 'Reporte', false]
 ];
 
@@ -419,6 +421,8 @@ async function vistaProyecto(id, pestana) {
 
   if (pestana === 'espacios') await pestanaEspacios(p);
   else if (pestana === 'fotos') await pestanaFotos(p);
+  else if (pestana === 'conceptos') await pestanaConceptos(p);
+  else if (pestana === 'presupuesto') await pestanaPresupuesto(p);
   else pestanaDatos(p);
 }
 
@@ -750,11 +754,12 @@ async function vistaEspacio(id) {
   });
 
   $('#eliminar').addEventListener('click', async () => {
-    const ok = await confirmar('Eliminar espacio', `¿Eliminar "${s.nombre || 'este espacio'}"? Sus fotos se conservarán como fotos sin espacio. Esta acción no se puede deshacer.`);
+    const ok = await confirmar('Eliminar espacio', `¿Eliminar "${s.nombre || 'este espacio'}"? Sus fotos se conservarán como fotos sin espacio, y sus conceptos como conceptos sin espacio. Esta acción no se puede deshacer.`);
     if (!ok) return;
     _pendiente && clearTimeout(_pendiente.timer);
     _pendiente = null;
     await desvincularFotos(s.id);
+    await desvincularPartidas(s.id);
     await dbBorrar('espacios', s.id);
     aviso('Espacio eliminado.');
     location.hash = `#/proyecto/${s.proyectoId}/espacios`;
@@ -766,11 +771,7 @@ async function vistaEspacio(id) {
 
 /* ---------- Catálogo (Etapa 6) ---------- */
 
-function vistaCatalogo() {
-  main().innerHTML = `
-    <header class="page-head"><h1>Catálogo de conceptos</h1></header>
-    <div class="card"><p>El catálogo de trabajos (demolición, pintura, pisos…) llegará en la Etapa 6.</p></div>`;
-}
+/* El catálogo vive en presupuesto.js (vistaCatalogo y vistaConcepto). */
 
 /* ---------- Ajustes ---------- */
 
@@ -829,6 +830,8 @@ async function vistaAjustes() {
       ${persistente === false ? '<button class="btn" id="persistir">Solicitar almacenamiento persistente</button>' : ''}
     </section>
 
+    ${seccionAjustesPresupuesto()}
+
     <section class="card">
       <h2>Cámara y fotos</h2>
       <p>Las fotos se guardan comprimidas (máximo 1600 px) solo en esta tablet.</p>
@@ -844,6 +847,7 @@ async function vistaAjustes() {
 
     <section class="card"><h2>Acerca de</h2><p>ObraPro · versión ${esc(VERSION_APP)}</p></section>`;
 
+  conectarAjustesPresupuesto();
   $('#a-unidad').addEventListener('change', e => { ajustes.unidad = e.target.value; programarGuardado(guardarAjustes, 0); });
   $('#a-resp').addEventListener('input', e => { ajustes.responsable = e.target.value.trim(); programarGuardado(guardarAjustes); });
 

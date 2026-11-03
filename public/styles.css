@@ -431,6 +431,105 @@ dialog h2 { margin-top: 0; }
   main.enter .fotos-grid > .foto-card:nth-child(n+5) { animation-delay: .2s; }
 }
 
+/* ---------- Catálogo, conceptos y presupuesto ---------- */
+.form-angosto { max-width: 760px; }
+.chips-info { display: flex; gap: .5rem; flex-wrap: wrap; margin: 0 0 .9rem; }
+.tq-medida { background: rgba(147, 201, 160, .16); color: #a6d8b2; }
+.tq-estimada { background: var(--accent-soft); color: #dcb994; }
+.tq-confirmada { background: rgba(147, 183, 216, .16); color: #a9c8e3; }
+.tag.aviso { background: rgba(238, 138, 120, .14); color: var(--danger); margin-left: .35rem; }
+.sub { display: block; color: var(--muted); font-size: .8rem; margin-top: .1rem; }
+.tabla-conceptos td { vertical-align: top; }
+/* Esta tabla se usa también en una columna angosta (Presupuesto en tablet): debe caber completa, con el Subtotal visible */
+.tabla.tabla-conceptos { min-width: 0; font-size: .94rem; }
+.tabla-conceptos th, .tabla-conceptos td { padding: .7rem .55rem; }
+.tabla-conceptos th { font-size: .7rem; letter-spacing: .04em; }
+.tabla-conceptos td.n { white-space: nowrap; }
+.tabla-conceptos td .badge { margin-left: .3rem; font-size: .7rem; padding: .08rem .5rem; }
+@media (max-width: 639px) {
+  .tabla.tabla-conceptos tbody td:nth-child(2) { grid-column: auto; color: var(--text); }
+  .tabla.tabla-conceptos tbody td:nth-child(5) { grid-column: 1 / -1; }
+}
+
+/* Resumen del presupuesto */
+.res-fuerte { border-bottom: 2px solid var(--border-strong); }
+.res-fuerte span { font-weight: 700; color: var(--text); }
+.res-input { gap: .6rem; align-items: center; }
+.res-input > label, .res-input > .iva-sw { flex: 1; color: var(--text-2); }
+.pct { display: inline-flex; align-items: center; gap: .25rem; }
+.pct input { width: 4.8rem; text-align: right; padding: .3rem .55rem; }
+.pct em { font-style: normal; color: var(--muted); }
+.resumen .res strong { min-width: 6.5rem; text-align: right; }
+.resumen .err { display: block; margin: -.2rem 0 .4rem; }
+/* Que una tabla ancha o una fila apretada nunca ensanchen toda la pantalla */
+.layout-espacio > *, .layout-foto > * { min-width: 0; }
+.res-input { flex-wrap: wrap; row-gap: .2rem; }
+.res-input > label, .res-input > .iva-sw { flex: 1 1 7.5rem; }
+.res-input > strong { margin-left: auto; }
+@media (max-width: 520px) {
+  .resumen .res strong { min-width: 0; }
+  .pct input { width: 4.2rem; }
+}
+.total-estimado {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; margin-top: .8rem;
+  padding: .9rem 1rem; border-radius: 10px; background: var(--accent-soft); border: 1px solid rgba(201, 162, 124, .4);
+}
+.total-estimado span { font-weight: 700; }
+.total-estimado strong { font-size: 1.45rem; color: var(--accent); font-variant-numeric: tabular-nums; text-align: right; }
+.iva-sw { display: inline-flex; align-items: center; gap: .65rem; }
+.switch {
+  position: relative; flex: none; width: 54px; height: 32px; padding: 0; border-radius: 999px; cursor: pointer;
+  border: 2px solid var(--border-strong); background: var(--field); transition: background-color .2s var(--ease), border-color .2s var(--ease);
+}
+.switch::before { content: ""; position: absolute; inset: -8px; }          /* área táctil de 48 px */
+.switch .knob { position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: var(--muted); transition: transform .25s var(--ease), background-color .2s var(--ease); }
+.switch[aria-checked="true"] { background: var(--accent-soft); border-color: var(--accent); }
+.switch[aria-checked="true"] .knob { transform: translateX(22px); background: var(--accent); }
+.switch:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+/* Presupuesto en tablet horizontal: resumen y cantidades arriba (lado a lado) y la tabla de conceptos a todo el ancho */
+@media (min-width: 1000px) and (max-width: 1399px) {
+  .layout-pres { grid-template-columns: 1fr; }
+  .layout-pres .col-side { position: static; order: -1; display: grid; grid-template-columns: 1.25fr 1fr; gap: 1rem; align-items: start; }
+  .layout-pres .col-side .card { margin: 0; }
+}
+.avisos { margin: .3rem 0 .9rem; padding-left: 1.1rem; color: var(--text-2); }
+.avisos li { margin-bottom: .45rem; }
+.formula { color: var(--muted); font-size: .85rem; margin: -.15rem 0 .5rem; font-variant-numeric: tabular-nums; }
+
+/* Editor de concepto */
+.seg { display: inline-flex; flex-wrap: wrap; border: 1.5px solid var(--border-strong); border-radius: 12px; overflow: hidden; }
+.seg-b {
+  min-height: 44px; padding: 0 1.1rem; background: var(--field); color: var(--text-2); border: 0; border-right: 1px solid var(--border-strong);
+  font: inherit; font-weight: 700; cursor: pointer; transition: background-color .2s var(--ease), color .2s var(--ease);
+}
+.seg-b:last-child { border-right: 0; }
+.seg-b:hover { color: var(--text); }
+.seg-b[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.origen { margin-top: .5rem; }
+.origen-btns { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: .6rem; }
+.origen-b[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+
+/* Catálogo y selector */
+.cat-grupo { margin-bottom: 1.2rem; }
+.cat-titulo { font-size: .95rem; color: var(--accent); margin: 0 0 .5rem; text-transform: uppercase; letter-spacing: .05em; }
+.cat-fila, .cat-item {
+  display: grid; grid-template-columns: 1fr auto; gap: .1rem 1rem; align-items: center; width: 100%; min-height: 56px; text-align: left;
+  padding: .7rem 1rem; margin-bottom: .45rem; border: 1px solid var(--border); border-radius: 10px; color: var(--text);
+  font: inherit; text-decoration: none; cursor: pointer;
+  transition: border-color .2s var(--ease), background-color .2s var(--ease), transform .2s var(--ease);
+}
+.cat-fila { background: var(--surface); }
+.cat-item { background: var(--field); }
+.cat-fila:hover, .cat-item:hover { border-color: var(--border-strong); background: var(--surface-2); transform: translateX(2px); }
+.cat-desc { font-weight: 700; }
+.cat-unidad { color: var(--muted); font-size: .9rem; text-align: right; }
+.cat-precio { grid-column: 1 / -1; color: var(--muted); font-size: .85rem; }
+.cat-item.cat-blanco { display: block; background: var(--accent-soft); border-color: rgba(201, 162, 124, .45); font-weight: 700; color: var(--accent); }
+.cat-sep { font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--accent); margin: .9rem 0 .4rem; font-weight: 700; }
+.cat-vacio { padding: 1rem .2rem; }
+.cat-lista { overflow-y: auto; max-height: 52vh; margin: .7rem 0; padding-right: .2rem; }
+#dlg-catalogo { width: min(660px, calc(100vw - 1.5rem)); }
+
 /* ---------- Pantalla de bienvenida con el logo ---------- */
 #splash {
   position: fixed; inset: 0; z-index: 100; background: var(--bg);
