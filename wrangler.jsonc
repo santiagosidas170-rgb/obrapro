@@ -4,5 +4,7 @@
   "compatibility_date": "2026-06-19",
   "assets": {
     "directory": "./public"
-  }
+  },
+  // Necesario para las vistas previas por rama (comando `wrangler preview` de Cloudflare)
+  "previews": {}
 }

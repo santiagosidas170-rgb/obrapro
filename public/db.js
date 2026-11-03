@@ -92,11 +92,51 @@ async function dbBorrarProyecto(proyectoId) {
   });
 }
 
-/* Copia de seguridad: todo en un solo objeto. */
-async function dbExportar() {
-  const datos = {};
-  for (const t of TABLAS) datos[t] = await dbTodos(t);
-  return { app: 'ObraPro', formato: 1, exportado: new Date().toISOString(), datos };
+/* ---------- Copias de seguridad (incluyen las fotos) ---------- */
+
+function blobADataURL(blob) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = () => reject(r.error);
+    r.readAsDataURL(blob);
+  });
+}
+
+function dataURLABlob(url) {
+  const coma = url.indexOf(',');
+  const tipo = (/^data:([^;,]+)/.exec(url.slice(0, coma)) || [])[1] || 'application/octet-stream';
+  const bin = atob(url.slice(coma + 1));
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return new Blob([bytes], { type: tipo });
+}
+
+/* Las fotos son archivos (Blob): en la copia se guardan como texto base64. */
+async function fotoParaRespaldo(f) {
+  const { imagen, miniatura, ...resto } = f;
+  if (imagen) resto.imagenData = await blobADataURL(imagen);
+  if (miniatura) resto.miniaturaData = await blobADataURL(miniatura);
+  return resto;
+}
+
+/* Devuelve la copia como una lista de pedazos de texto. Se arma por partes
+   (y no con un solo JSON.stringify) para que muchas fotos no agoten la memoria. */
+async function dbExportarPartes() {
+  const partes = ['{"app":"ObraPro","formato":2,"exportado":' + JSON.stringify(new Date().toISOString()) + ',"datos":{'];
+  let primera = true;
+  for (const t of TABLAS) {
+    partes.push((primera ? '' : ',') + JSON.stringify(t) + ':[');
+    primera = false;
+    const filas = await dbTodos(t);
+    for (let i = 0; i < filas.length; i++) {
+      const fila = t === 'fotos' ? await fotoParaRespaldo(filas[i]) : filas[i];
+      partes.push((i ? ',' : '') + JSON.stringify(fila));
+    }
+    partes.push(']');
+  }
+  partes.push('}}');
+  return partes;
 }
 
 /* Restaurar: reemplaza todo. Si algo falla, no se cambia nada. */
@@ -104,15 +144,22 @@ async function dbImportar(respaldo) {
   if (!respaldo || respaldo.app !== 'ObraPro' || !respaldo.datos) {
     throw new Error('El archivo no es una copia de seguridad de ObraPro.');
   }
+  const datos = {};
+  for (const t of TABLAS) datos[t] = (respaldo.datos[t] || []).filter(o => o && o.id);
+  /* Fotos: del texto base64 de vuelta a archivos. Las que no traen imagen se omiten. */
+  datos.fotos = datos.fotos.map(f => {
+    const { imagenData, miniaturaData, ...resto } = f;
+    if (imagenData) resto.imagen = dataURLABlob(imagenData);
+    if (miniaturaData) resto.miniatura = dataURLABlob(miniaturaData);
+    return resto;
+  }).filter(f => f.imagen);
   const db = await abrirDB();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(TABLAS, 'readwrite');
     for (const t of TABLAS) {
       const store = tx.objectStore(t);
       store.clear();
-      for (const obj of (respaldo.datos[t] || [])) {
-        if (obj && obj.id) store.put(obj);
-      }
+      for (const obj of datos[t]) store.put(obj);
     }
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
