@@ -3,14 +3,12 @@
    guardado local y copia de seguridad. */
 'use strict';
 
-const VERSION_APP = '0.5.0 (rediseño grafito)';
+const VERSION_APP = '0.7.0 (Etapa 5: fotos)';
 
 /* Íconos dibujados (la tipografía Lato no incluye ✓ ni ✕) */
 const ICONO_CHECK = '<svg class="ico-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>';
 const ICONO_X = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
-const ICONO_CASA = `<svg class="empty-ico" viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M14 32L32 16l18 16M19 29v18h26V29" stroke="#9aa3ae" stroke-width="3.5"/>
-  <rect x="12" y="51" width="40" height="6" rx="1.5" fill="#f2923d"/></svg>`;
+const ICONO_CASA = '<img class="empty-ico" src="logo-sm.png" alt="" width="84" height="87">';
 let _tramoNuevo = -1;
 
 const ESTADOS = [
@@ -184,6 +182,7 @@ const main = () => $('#main');
 
 async function enrutar() {
   await guardarPendiente();
+  limpiarVista();
   const partes = (location.hash.replace(/^#\/?/, '') || 'proyectos').split('/');
   const [vista, id, pestana] = partes;
   marcarMenu(vista);
@@ -194,6 +193,7 @@ async function enrutar() {
       case 'nuevo': await vistaNuevoProyecto(); break;
       case 'proyecto': await vistaProyecto(id, pestana || 'datos'); break;
       case 'espacio': await vistaEspacio(id); break;
+      case 'foto': await vistaFoto(id); break;
       case 'catalogo': vistaCatalogo(); break;
       case 'ajustes': await vistaAjustes(); break;
       default: location.hash = '#/proyectos'; return;
@@ -215,7 +215,7 @@ async function enrutar() {
 }
 
 function marcarMenu(vista) {
-  const mapa = { proyecto: 'proyectos', espacio: 'proyectos', nuevo: 'proyectos' };
+  const mapa = { proyecto: 'proyectos', espacio: 'proyectos', foto: 'proyectos', nuevo: 'proyectos' };
   const activo = mapa[vista] || vista;
   $$('#nav a[data-view]').forEach(a => {
     const on = a.dataset.view === activo;
@@ -386,7 +386,7 @@ async function vistaNuevoProyecto() {
 const PESTANAS = [
   ['datos', 'Datos', true],
   ['espacios', 'Espacios', true],
-  ['fotos', 'Fotos', false],
+  ['fotos', 'Fotos', true],
   ['conceptos', 'Conceptos', false],
   ['presupuesto', 'Presupuesto', false],
   ['reporte', 'Reporte', false]
@@ -413,11 +413,12 @@ async function vistaProyecto(id, pestana) {
     <nav class="tabs" aria-label="Secciones del proyecto">
       ${PESTANAS.map(([k, t, on]) => on
         ? `<a href="#/proyecto/${id}/${k}" class="tab${k === pestana ? ' active' : ''}"${k === pestana ? ' aria-current="page"' : ''}>${t}</a>`
-        : `<span class="tab disabled" title="Disponible en una próxima etapa">${t}</span>`).join('')}
+        : `<span class="tab disabled" title="Disponible en una próxima etapa">${t} <em class="pronto">Pronto</em></span>`).join('')}
     </nav>
     <section id="tab-body"></section>`;
 
   if (pestana === 'espacios') await pestanaEspacios(p);
+  else if (pestana === 'fotos') await pestanaFotos(p);
   else pestanaDatos(p);
 }
 
@@ -580,6 +581,8 @@ async function vistaEspacio(id) {
           ${campoTexto('trabajos', 'Trabajos que se necesitan', s.trabajos, 3)}
           ${campoTexto('observaciones', 'Observaciones', s.observaciones, 3)}
         </fieldset>
+
+        <div id="fotos-espacio"></div>
 
         <div class="actions danger-zone">
           <button type="button" class="btn danger-outline" id="eliminar">Eliminar espacio</button>
@@ -747,15 +750,17 @@ async function vistaEspacio(id) {
   });
 
   $('#eliminar').addEventListener('click', async () => {
-    const ok = await confirmar('Eliminar espacio', `¿Eliminar "${s.nombre || 'este espacio'}"? Esta acción no se puede deshacer.`);
+    const ok = await confirmar('Eliminar espacio', `¿Eliminar "${s.nombre || 'este espacio'}"? Sus fotos se conservarán como fotos sin espacio. Esta acción no se puede deshacer.`);
     if (!ok) return;
     _pendiente && clearTimeout(_pendiente.timer);
     _pendiente = null;
+    await desvincularFotos(s.id);
     await dbBorrar('espacios', s.id);
     aviso('Espacio eliminado.');
     location.hash = `#/proyecto/${s.proyectoId}/espacios`;
   });
 
+  montarFotosEspacio($('#fotos-espacio'), s);
   if (!s.nombre) $('#f-nombre').focus();
 }
 
@@ -772,7 +777,12 @@ function vistaCatalogo() {
 async function vistaAjustes() {
   const puedeCompartir = !!(navigator.canShare && window.File &&
     navigator.canShare({ files: [new File(['x'], 'x.json', { type: 'application/json' })] }));
-  let persistente = null, uso = '';
+  let persistente = null, uso = '', usoFotos = '';
+  try {
+    const fs = await dbTodos('fotos');
+    const bytes = fs.reduce((t, x) => t + ((x.imagen && x.imagen.size) || 0) + ((x.miniatura && x.miniatura.size) || 0), 0);
+    usoFotos = `Fotos guardadas: ${fs.length} (${(bytes / 1048576).toFixed(1)} MB).`;
+  } catch (e) { /* sin dato */ }
   if (navigator.storage) {
     try { if (navigator.storage.persisted) persistente = await navigator.storage.persisted(); } catch (e) { /* sin soporte */ }
     try {
@@ -800,7 +810,7 @@ async function vistaAjustes() {
     <section class="card">
       <h2>Copia de seguridad</h2>
       <p>Tus datos solo están en esta tablet. Si borras los datos del navegador o pierdes la tablet, se pierden.
-        Descarga una copia con frecuencia y guárdala fuera de la tablet (correo, USB o computadora).</p>
+        Descarga una copia con frecuencia y guárdala fuera de la tablet (correo, USB o computadora). La copia incluye tus fotos, así que puede pesar varios MB.</p>
       <p class="muted">Última copia: ${ajustes.ultimoRespaldo ? fecha(ajustes.ultimoRespaldo) : 'nunca'}</p>
       <div class="actions">
         <button class="btn primary" id="exportar">Descargar copia</button>
@@ -815,8 +825,14 @@ async function vistaAjustes() {
       <p>${persistente === true ? 'Almacenamiento persistente: <strong>activado</strong>. El navegador no borrará los datos por falta de espacio.'
         : persistente === false ? 'Almacenamiento persistente: <strong>no activado</strong>. El navegador podría borrar datos si se queda sin espacio.'
         : 'Este navegador no informa si el almacenamiento es persistente.'}</p>
-      <p class="muted">${uso}</p>
+      <p class="muted">${uso} ${usoFotos}</p>
       ${persistente === false ? '<button class="btn" id="persistir">Solicitar almacenamiento persistente</button>' : ''}
+    </section>
+
+    <section class="card">
+      <h2>Cámara y fotos</h2>
+      <p>Las fotos se guardan comprimidas (máximo 1600 px) solo en esta tablet.</p>
+      ${AYUDA_PERMISOS}
     </section>
 
     <section class="card">
@@ -832,9 +848,9 @@ async function vistaAjustes() {
   $('#a-resp').addEventListener('input', e => { ajustes.responsable = e.target.value.trim(); programarGuardado(guardarAjustes); });
 
   const crearArchivo = async () => {
-    const datos = await dbExportar();
+    const partes = await dbExportarPartes();
     const nombre = `obrapro-respaldo-${hoy()}.json`;
-    return new File([JSON.stringify(datos, null, 1)], nombre, { type: 'application/json' });
+    return new File(partes, nombre, { type: 'application/json' });
   };
   const marcarRespaldo = async () => {
     ajustes.ultimoRespaldo = ahora();
@@ -874,9 +890,9 @@ async function vistaAjustes() {
     try { datos = JSON.parse(await f.text()); }
     catch (err) { aviso('El archivo no se puede leer como copia de seguridad.', 'error'); return; }
     if (!datos || datos.app !== 'ObraPro') { aviso('El archivo no es una copia de seguridad de ObraPro.', 'error'); return; }
-    const n = (datos.datos.proyectos || []).length;
+    const n = (datos.datos.proyectos || []).length, nf = (datos.datos.fotos || []).length;
     const ok = await confirmar('Restaurar copia',
-      `La copia del ${fecha(datos.exportado)} tiene ${n} proyecto(s). Se reemplazarán TODOS los datos actuales de la app. ¿Continuar?`,
+      `La copia del ${fecha(datos.exportado)} tiene ${n} proyecto(s) y ${nf} foto(s). Se reemplazarán TODOS los datos actuales de la app. ¿Continuar?`,
       'Restaurar');
     if (!ok) return;
     try {

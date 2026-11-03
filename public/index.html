@@ -3,22 +3,48 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#101215">
+  <meta name="theme-color" content="#121110">
   <meta name="color-scheme" content="dark">
   <meta name="description" content="ObraPro: levantamientos de obra y remodelación, sin conexión.">
   <title>ObraPro</title>
   <link rel="manifest" href="manifest.json">
-  <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="icon" href="favicon.ico" sizes="48x48">
+  <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="preload" href="logo.png" as="image">
   <link rel="preload" href="fonts/lato-400.woff" as="font" type="font/woff" crossorigin>
   <link rel="preload" href="fonts/lato-700.woff" as="font" type="font/woff" crossorigin>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <!-- Pantalla de bienvenida: el logo es lo primero que se ve. Toca para saltarla. -->
+  <div id="splash" role="img" aria-label="ObraPro">
+    <img class="marca" src="logo.png" alt="" width="731" height="760">
+    <div class="nombre">ObraPro</div>
+    <div class="lema">Levantamientos de obra</div>
+  </div>
+  <script>
+    (function () {
+      var s = document.getElementById('splash');
+      try { if (sessionStorage.getItem('obrapro-splash')) { s.remove(); return; } } catch (e) {}
+      var reducir = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var t = setTimeout(salir, reducir ? 900 : 2700);
+      function salir() {
+        clearTimeout(t);
+        try { sessionStorage.setItem('obrapro-splash', '1'); } catch (e) {}
+        s.classList.add('fuera');
+        setTimeout(function () { if (s.parentNode) s.remove(); }, 700);
+        document.removeEventListener('keydown', alTeclear);
+      }
+      function alTeclear(e) { if (e.key === 'Enter' || e.key === 'Escape' || e.key === ' ') salir(); }
+      s.addEventListener('click', salir);
+      document.addEventListener('keydown', alTeclear);
+    })();
+  </script>
+
   <div class="app">
     <nav class="sidenav" id="nav" aria-label="Menú principal">
-      <div class="brand"><img src="favicon.svg" alt="" width="34" height="34"><span>ObraPro</span></div>
+      <div class="brand"><img src="logo-sm.png" alt="" width="34" height="35"><span>ObraPro</span></div>
       <a href="#/proyectos" data-view="proyectos">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h7l2 2h9v11H3z"/></svg><span>Proyectos</span></a>
       <a href="#/catalogo" data-view="catalogo">
@@ -44,9 +70,28 @@
     </form>
   </dialog>
 
+  <dialog id="dlg-texto">
+    <form method="dialog">
+      <h2 id="dlg-texto-title"></h2>
+      <label class="field"><span id="dlg-texto-label"></span>
+        <input id="dlg-texto-input" type="text" autocomplete="off" maxlength="60"></label>
+      <div class="chips" role="group" aria-label="Unidades rápidas">
+        <button type="button" class="chip sugerencia" data-t="m">m</button>
+        <button type="button" class="chip sugerencia" data-t="cm">cm</button>
+        <button type="button" class="chip sugerencia" data-t="mm">mm</button>
+        <button type="button" class="chip sugerencia" data-t="m²">m²</button>
+      </div>
+      <div class="dlg-actions">
+        <button value="cancel" class="btn">Cancelar</button>
+        <button type="button" id="dlg-texto-ok" class="btn primary">Aceptar</button>
+      </div>
+    </form>
+  </dialog>
+
   <noscript>ObraPro necesita JavaScript activado.</noscript>
   <script src="calc.js"></script>
   <script src="db.js"></script>
+  <script src="fotos.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
