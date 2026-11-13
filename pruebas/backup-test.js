@@ -5,7 +5,7 @@ const fs = require('fs');
 const BASE = process.env.BASE || 'http://localhost:8123/';
 const OUT = SALIDA + '/backup';
 fs.mkdirSync(OUT, { recursive: true });
-const TABLAS = ['proyectos', 'espacios', 'fotos', 'catalogo', 'partidas', 'ajustes'];
+const TABLAS = ['proyectos', 'espacios', 'fotos', 'catalogo', 'partidas', 'ajustes', 'seguimiento'];
 let ok = 0, fail = 0;
 const check = (n, c, x = '') => { if (c) { ok++; console.log('✔', n); } else { fail++; console.log('✘', n, x); } };
 const wait = ms => new Promise(r => setTimeout(r, ms));

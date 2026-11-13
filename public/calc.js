@@ -175,8 +175,25 @@ function dineroTxt(cents) {
 /* 187500 → "$1,875.00" */
 function formatoPesos(cents) { return '$' + dineroTxt(cents || 0); }
 
+/* ---------- Seguimiento de obra (Etapa 9) ----------
+   Todo en centavos enteros. "total" es el total del presupuesto (null si no hay). */
+function resumenObra({ total = null, costoDirecto = 0, pagos = [], gastos = [] } = {}) {
+  const suma = l => l.reduce((a, x) => a + (Number.isInteger(x.monto) ? x.monto : 0), 0);
+  const cobrado = suma(pagos), gastado = suma(gastos);
+  const porCategoria = {};
+  for (const g of gastos) if (Number.isInteger(g.monto)) porCategoria[g.categoria || 'otro'] = (porCategoria[g.categoria || 'otro'] || 0) + g.monto;
+  return {
+    cobrado, gastado, porCategoria,
+    porCobrar: total == null ? null : total - cobrado,
+    avanceCobro: total ? Math.max(0, Math.min(100, Math.round(cobrado * 10000 / total) / 100)) : null,
+    diferenciaCosto: costoDirecto ? costoDirecto - gastado : null,   /* + = gastaste menos de lo presupuestado */
+    utilidadReal: cobrado - gastado                                     /* cobrado − gastado, a la fecha */
+  };
+}
+
+
 if (typeof module !== 'undefined') {
-  module.exports = { UNIDADES, redondear2, aMetros, leerNumero, validarMedida, calcularEspacio,
+  module.exports = { resumenObra, UNIDADES, redondear2, aMetros, leerNumero, validarMedida, calcularEspacio,
     superficieTramo, centavos, calcularPartida, calcularPresupuesto, formatoMXN,
     leerDinero, leerPorcentaje, leerCantidad, dineroTxt, formatoPesos };
 }

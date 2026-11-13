@@ -678,3 +678,38 @@ dialog h2 { margin-top: 0; }
   .rp-bloque > h2, .rp-espacio > h3 { break-after: avoid; page-break-after: avoid; }
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
+
+/* ---------- Etapa 9: seguimiento de obra ---------- */
+.layout-obra { display: grid; gap: 1rem; grid-template-columns: 1fr; }
+.layout-obra > * { min-width: 0; margin: 0; }
+@media (min-width: 900px) { .layout-obra { grid-template-columns: 1fr 1fr; align-items: start; } #ob-bitacora { grid-column: 1 / -1; } }
+.inline-sel { display: flex; align-items: center; gap: .6rem; }
+.inline-sel span { color: var(--text-2); font-size: .9rem; }
+.inline-sel select { min-height: var(--tap); }
+.resumen-ob { margin: .4rem 0 .8rem; display: grid; gap: .1rem; }
+.resumen-ob > div { display: flex; justify-content: space-between; gap: 1rem; padding: .45rem 0; border-bottom: 1px solid var(--border); }
+.resumen-ob dt { color: var(--text-2); }
+.resumen-ob dd { margin: 0; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.resumen-ob .total { border-bottom: 0; border-top: 2px solid var(--accent); margin-top: .3rem; font-size: 1.05rem; }
+.resumen-ob .total dt { color: var(--text); font-weight: 700; }
+.resumen-ob .ok { color: #7fd6a0; }
+.resumen-ob .mal { color: var(--danger); }
+.barra { height: 10px; background: var(--surface-2); border-radius: 999px; overflow: hidden; }
+.barra span { display: block; height: 100%; background: var(--accent); border-radius: 999px; transition: width .5s var(--ease, ease); }
+.lista-mov { display: grid; gap: .35rem; margin: .5rem 0; }
+.fila-mov { display: flex; justify-content: space-between; align-items: center; gap: 1rem; width: 100%; min-height: var(--tap); padding: .55rem .8rem;
+  text-align: left; background: var(--surface-2); color: var(--text); border: 1px solid var(--border); border-radius: 10px; cursor: pointer; font: inherit; }
+.fila-mov:hover { border-color: var(--accent); }
+.fm-main { display: grid; min-width: 0; }
+.fm-main strong, .fm-main small { overflow-wrap: anywhere; }
+.fm-main small { color: var(--text-2); }
+.fm-monto { font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.entrada { padding: .8rem 0; border-top: 1px solid var(--border); }
+.entrada header { display: flex; justify-content: space-between; align-items: center; gap: .6rem; flex-wrap: wrap; }
+.entrada p { margin: .4rem 0; overflow-wrap: anywhere; }
+.mini-fotos { display: flex; flex-wrap: wrap; gap: .5rem; }
+.mini-fotos img { width: 96px; height: 96px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); display: block; }
+.dlg-form { width: min(520px, 94vw); }
+.dlg-form .field { margin-bottom: .7rem; }
+.dlg-form textarea, .dlg-form select, .dlg-form input { width: 100%; }
+.error-msg { color: var(--danger); margin: .4rem 0; }

@@ -18,7 +18,13 @@ Cuando publiques una versión nueva, abre la app con internet una vez, ciérrala
 4. **Catálogo.** En el menú, captura tus conceptos con **tus propios precios** de material y mano de obra. ObraPro no trae precios; el botón de conceptos básicos solo agrega nombres sin precio.
 5. **Conceptos del proyecto.** Agrega conceptos desde el catálogo. La cantidad puede tomarse de un espacio (piso, muros o perímetro) y queda como **Medida**; si la escribes tú queda **Estimada**, y puedes marcarla **Confirmada**. El desperdicio se aplica solo al material.
 6. **Presupuesto.** Elige indirectos y utilidad. El **IVA no se suma** hasta que lo actives y lo confirmes. Agrega notas, vigencia y condiciones.
-7. **Reporte.** Elige qué espacios y qué contenido incluir, pide la firma del cliente en la pantalla y toca **Ver reporte → Descargar PDF**.
+7. **Obra (seguimiento y pagos).** Cuando el proyecto arranca, usa la pestaña **Obra**:
+   - **Estado** del proyecto (pendiente, en levantamiento, presupuestado, en ejecución, terminado).
+   - **Pagos recibidos:** anota cada anticipo o estimación con su fecha, monto y forma de pago. La app te dice cuánto has cobrado y cuánto falta por cobrar del presupuesto.
+   - **Gastos reales:** anota lo que realmente gastas (material, mano de obra, transporte, etc.). La app compara contra el costo directo presupuestado y calcula tu **utilidad a la fecha** (cobrado − gastado).
+   - **Bitácora:** un diario de la obra con fecha y notas, y **fotos de avance** en cada entrada.
+   - Los gastos y la utilidad son solo para ti y **nunca salen en el reporte**. Si quieres, el reporte puede llevar un **Estado de pagos** para el cliente.
+8. **Reporte.** Elige qué espacios y qué contenido incluir, pide la firma del cliente en la pantalla y toca **Ver reporte → Descargar PDF**.
 
 ### Cómo se calcula el presupuesto
 
@@ -38,6 +44,7 @@ Todo en pesos mexicanos con 2 decimales. Las medidas se convierten a metros ante
 - En **Ajustes → Datos para el reporte** captura tu nombre o empresa, teléfono, correo, logo y firma. Si no subes un logo, se usa el de ObraPro.
 - Si dejas espacios fuera del reporte, el presupuesto del reporte solo suma los conceptos de los espacios incluidos y lo dice en la hoja.
 - Las cantidades estimadas salen con un asterisco.
+- **Estado de pagos** (opcional, viene sin marcar): lista los pagos que recibiste y el saldo por pagar. Si dejas espacios fuera del reporte, solo lista los pagos, sin calcular saldo. Nunca incluye tus gastos.
 - El PDF queda en la carpeta **Descargas**. Si el botón no descarga, usa **Abrir PDF** o **Compartir PDF**.
 - Cada página del PDF es una imagen: se ve igual en cualquier lector, pero el texto no se puede copiar.
 
@@ -45,7 +52,7 @@ Todo en pesos mexicanos con 2 decimales. Las medidas se convierten a metros ante
 
 Tus datos **solo existen en la tablet**. Si borras los datos del navegador, desinstalas la app o pierdes la tablet, se pierden.
 
-- Ve a **Ajustes → Copia de seguridad → Descargar copia** (o **Compartir copia** para mandarla por correo o WhatsApp). La copia incluye proyectos, espacios, fotos con sus medidas, catálogo, conceptos, presupuestos, logo y firmas.
+- Ve a **Ajustes → Copia de seguridad → Descargar copia** (o **Compartir copia** para mandarla por correo o WhatsApp). La copia incluye proyectos, espacios, fotos con sus medidas, catálogo, conceptos, presupuestos, pagos, gastos, bitácora, logo y firmas.
 - Hazla **cada vez que termines de trabajar en un proyecto**, y guárdala fuera de la tablet (correo, computadora o USB). La app te avisa cuando pasan más de 7 días sin copia.
 - Una copia puede pesar varios MB por las fotos. Contiene datos de tus clientes: guárdala en un lugar seguro.
 - **Restaurar copia** reemplaza **todo** lo que hay en la app. Si el archivo está dañado o no es de ObraPro, la app lo rechaza y no cambia nada. Si le faltan fotos, restaura el resto y te dice cuántas no pudo recuperar.

@@ -6,17 +6,18 @@ Se corren con `bash pruebas/ejecutar.sh` (necesita Node.js, Playwright con Chrom
 
 | Archivo | Comprobaciones | Qué cubre |
 | --- | --- | --- |
-| `test_calc.js` | 65 | Fórmulas: superficies (rectangular, irregular, cm, pies), perímetro, muros, dinero en centavos, desperdicio, indirectos, utilidad, IVA, lectura de precios y porcentajes. |
+| `test_calc.js` | 78 | Fórmulas: superficies (rectangular, irregular, cm, pies), perímetro, muros, dinero en centavos, desperdicio, indirectos, utilidad, IVA, lectura de precios y porcentajes, resumen de cobros y gastos. |
 | `e2e.js` | 31 | Proyectos, espacios, validaciones, borrador, archivar, eliminar en cascada, copia y restauración básica, sin conexión. |
 | `design.js` | 36 | Diseño, responsive, animaciones, íconos, manifiesto y caché del Service Worker. |
 | `splash.js` | 22 | Pantalla de bienvenida y logo. |
 | `fotos-test.js` | 85 | Fotos: carga, compresión, orientación, galería, dibujo de medidas con ratón y toque, deshacer, guardar imagen. |
 | `presupuesto-test.js` | 90 | Catálogo, conceptos, cantidades medida/estimada/confirmada, presupuesto, IVA con confirmación, caso de referencia $10,792.73. |
+| `seguimiento-test.js` | 48 | Actualización de la base vieja sin perder datos, pagos, gastos, bitácora con fotos, resumen financiero, estado de pagos en el reporte (sin gastos), copia y borrado en cascada. |
 | `reporte-test.js` | 56 | Datos y firmas, selección de espacios, contenido del reporte, PDF propio y por impresión, tablet y celular. |
 | `backup-test.js` | 24 | Copia con 40 fotos (7 MB): ida y vuelta idéntica byte a byte, archivos dañados, copia vieja, registros inválidos. |
 | `tabla-ancho.js` | 12 | La tabla de conceptos cabe completa en cada tamaño de pantalla. |
 
-**Total: 421 comprobaciones, todas correctas** en la última corrida.
+**Total: 482 comprobaciones, todas correctas** en la última corrida.
 
 ### Problemas que las pruebas encontraron y se corrigieron
 
@@ -41,6 +42,8 @@ Todo lo que depende del equipo real. Esta lista es para revisarla en la Huawei M
 - [ ] Firmar con el dedo (firma del cliente y firma propia).
 - [ ] Descargar una copia de seguridad, borrar un proyecto de prueba y restaurar la copia.
 - [ ] Probar con un proyecto real grande (muchas fotos) y revisar que no se trabe ni se llene el almacenamiento.
+- [ ] Registrar un pago y un gasto con el teclado físico y revisar que el resumen cuadre con tus cuentas.
+- [ ] Crear una entrada de bitácora con una foto tomada con la cámara.
 - [ ] Girar la tablet (vertical y horizontal) y revisar que nada se corte.
 - [ ] Actualización: publicar una versión nueva y confirmar que la tablet la toma (versión en Ajustes).
 

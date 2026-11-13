@@ -4,7 +4,7 @@
    Todo se guarda solo en el dispositivo. Usa funciones de app.js y db.js. */
 'use strict';
 
-const CATEGORIAS_FOTO = [['general', 'General'], ['dano', 'Daño'], ['acabado', 'Acabado existente'], ['instalacion', 'Instalación']];
+const CATEGORIAS_FOTO = [['general', 'General'], ['dano', 'Daño'], ['acabado', 'Acabado existente'], ['instalacion', 'Instalación'], ['avance', 'Avance de obra']];
 const COLORES_ANOT = [['#ffd23f', 'Amarillo'], ['#ffffff', 'Blanco'], ['#ff6b5e', 'Rojo'], ['#4ddb8b', 'Verde']];
 const MAX_LADO = 1600;      /* lado más largo de la foto guardada, en píxeles */
 const MAX_MINIATURA = 320;
@@ -521,7 +521,7 @@ async function vistaFoto(id) {
     }
     pedirDibujo();
   });
-  canvas.addEventListener('pointermove', e => {
+  const aplicarMovimiento = e => {
     if (!arrastre || arrastre.id !== e.pointerId) return;
     const pt = punto(e);
     if (arrastre.tipo === 'nueva') arrastre.b = pt;
@@ -538,9 +538,11 @@ async function vistaFoto(id) {
       } else { a.x = Math.min(1, Math.max(0, c.x + dx)); a.y = Math.min(1, Math.max(0, c.y + dy)); }
     }
     pedirDibujo();
-  });
+  };
+  canvas.addEventListener('pointermove', aplicarMovimiento);
   const terminar = async e => {
     if (!arrastre || arrastre.id !== e.pointerId) return;
+    aplicarMovimiento(e);          /* usa la posición exacta donde se soltó el dedo o el lápiz */
     const act = arrastre; arrastre = null;
     if (act.tipo === 'nueva') {
       const largo = Math.hypot((act.b.x - act.a.x) * act.a.r.width, (act.b.y - act.a.y) * act.a.r.height);

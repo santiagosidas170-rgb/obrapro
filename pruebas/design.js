@@ -171,7 +171,7 @@ const check = (n, c, x='') => { if (c) { ok++; console.log('✔', n); } else { f
   await page.setViewportSize({ width: 1228, height: 800 });
   await page.goto(BASE); await page.evaluate(() => navigator.serviceWorker.ready); await page.reload(); await page.waitForTimeout(800);
   const cache = await page.evaluate(async () => { const k = await caches.keys(); const c = await caches.open(k[0]); return { k, n: (await c.keys()).length }; });
-  check('Service Worker guarda 20 archivos en caché v1.0.0 (incluye el logo)', cache.k[0] === 'obrapro-v1.0.0' && cache.n === 20, JSON.stringify(cache));
+  check('Service Worker guarda 21 archivos en caché v1.1.0 (incluye el logo)', cache.k[0] === 'obrapro-v1.1.0' && cache.n === 21, JSON.stringify(cache));
   await ctx.setOffline(true);
   await page.reload(); await page.waitForSelector('.project-card');
   const off = await page.evaluate(async () => { await document.fonts.ready; return { l: document.fonts.check('700 16px Lato'), bg: getComputedStyle(document.body).backgroundColor,

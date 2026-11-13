@@ -132,7 +132,7 @@ function cargarURL(src) {
 async function dibujarReporte(p, avanzar) {
   const o = opcionesReporte(p), c = datosContratista();
   if (document.fonts && document.fonts.load) { try { await Promise.all([document.fonts.load('400 20px Lato'), document.fonts.load('700 20px Lato')]); } catch (e) { /* usa la fuente de respaldo */ } }
-  const [todos, fotos, partidas] = await Promise.all([dbPorProyecto('espacios', p.id), dbPorProyecto('fotos', p.id), dbPorProyecto('partidas', p.id)]);
+  const [todos, fotos, partidas, seg] = await Promise.all([dbPorProyecto('espacios', p.id), dbPorProyecto('fotos', p.id), dbPorProyecto('partidas', p.id), dbPorProyecto('seguimiento', p.id)]);
   todos.sort((a, b) => (a.orden || 0) - (b.orden || 0) || (a.creado || '').localeCompare(b.creado || ''));
   const ids = new Set(o.sel || todos.map(s => s.id));
   const espacios = todos.filter(s => ids.has(s.id));
@@ -223,7 +223,7 @@ async function dibujarReporte(p, avanzar) {
       await avanzar(0.2 + 0.4 * (++n / espacios.length));
     }
   }
-  const gen = o.fotosGenerales && o.fotos ? ordenFotos.filter(f => !f.espacioId || !nombreEsp[f.espacioId]) : [];
+  const gen = o.fotosGenerales && o.fotos ? ordenFotos.filter(f => !f.bitacoraId && (!f.espacioId || !nombreEsp[f.espacioId])) : [];
   if (gen.length) { H.cabe(300); H.fuente(29, true); ctx().fillStyle = T.tinta; ctx().fillText('Fotos generales', PDF_M, H.y + 29); H.y += 46; await fotosDe(gen); }
 
   /* Conceptos y presupuesto */
@@ -267,6 +267,25 @@ async function dibujarReporte(p, avanzar) {
     if (pr.vigencia) H.parrafo('Vigencia: ' + pr.vigencia, { px: 22 });
     if (pr.notas) H.parrafo('Notas: ' + pr.notas, { px: 22 });
     if (pr.condiciones) H.parrafo('Condiciones: ' + pr.condiciones, { px: 22 });
+  }
+  /* Estado de pagos (solo pagos; nunca gastos ni utilidad) */
+  const pagosL = seg.filter(m => m.tipo === 'pago').sort((a, b) => (a.fecha || '').localeCompare(b.fecha || ''));
+  if (o.pagos && pagosL.length) {
+    const cobrado = pagosL.reduce((a, m) => a + (m.monto || 0), 0);
+    const tp = excluidos === 0 ? await totalPresupuestoProyecto(p) : { total: null };
+    H.cabe(420); H.h2('Estado de pagos');
+    H.tabla([{ t: 'Fecha', f: .17 }, { t: 'Concepto', f: .35 }, { t: 'Forma de pago', f: .25 }, { t: 'Monto', f: .23, ali: 'right' }],
+      pagosL.map(m => [fecha(m.fecha), { t: etiqueta(CONCEPTOS_PAGO, m.concepto), sub: m.nota || '' }, etiqueta(METODOS_PAGO, m.metodo), formatoPesos(m.monto)]),
+      { pie: ['Total cobrado', '', '', formatoPesos(cobrado)] });
+    if (tp.total != null) {
+      const filas = [['Presupuesto total' + (tp.conIva ? ' (con IVA)' : ' (sin IVA)'), formatoPesos(tp.total)], ['Cobrado', formatoPesos(cobrado)], [tp.total - cobrado < 0 ? 'Saldo a favor del cliente' : 'Saldo por pagar', formatoPesos(Math.abs(tp.total - cobrado))]];
+      const xr = PDF_M + H.ancho * .38, wr = H.ancho * .62;
+      H.cabe(filas.length * 46 + 20);
+      filas.forEach(([a, b], i) => {
+        H.fuente(22, i === 2); ctx().fillStyle = T.tinta; ctx().fillText(a, xr, H.y + 30); ctx().fillText(b, xr + wr - H.medir(b), H.y + 30);
+        ctx().fillStyle = T.linea; ctx().fillRect(xr, H.y + 42, wr, 1.5); H.y += 46;
+      });
+    }
   }
   H.y += 14;
   H.parrafo(AVISO_MEDIDAS + ' La superficie de muros es bruta: no descuenta puertas ni ventanas.', { px: 19, color: T.gris });

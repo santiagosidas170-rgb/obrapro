@@ -4,10 +4,10 @@
 'use strict';
 
 const DB_NOMBRE = 'obrapro';
-const DB_VERSION = 1;
+const DB_VERSION = 2;   /* v2 (Etapa 9): tabla "seguimiento" (pagos, gastos y bitácora) */
 /* Se crean desde ahora todas las tablas que usarán las siguientes etapas. */
-const TABLAS = ['proyectos', 'espacios', 'fotos', 'catalogo', 'partidas', 'ajustes'];
-const CON_PROYECTO = ['espacios', 'fotos', 'partidas'];
+const TABLAS = ['proyectos', 'espacios', 'fotos', 'catalogo', 'partidas', 'ajustes', 'seguimiento'];
+const CON_PROYECTO = ['espacios', 'fotos', 'partidas', 'seguimiento'];
 
 let _db = null;
 

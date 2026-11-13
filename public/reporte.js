@@ -11,12 +11,13 @@ const OPCIONES_REPORTE = [
   ['fotosGenerales', 'Fotos que no son de un espacio'],
   ['conceptos', 'Conceptos de obra'],
   ['presupuesto', 'Resumen del presupuesto'],
+  ['pagos', 'Estado de pagos (no incluye tus gastos)'],
   ['firmas', 'Recuadros de firma']
 ];
 
 function opcionesReporte(p) {
   const r = p.reporte = Object.assign({ sel: null, fotos: true, medidas: true, fotosGenerales: true,
-    conceptos: true, presupuesto: true, firmas: true }, p.reporte || {});
+    conceptos: true, presupuesto: true, pagos: false, firmas: true }, p.reporte || {});
   return r;
 }
 
@@ -263,7 +264,7 @@ async function vistaReporte(id) {
   }
   const o = opcionesReporte(p);
   const c = datosContratista();
-  const [todosEsp, fotos, partidas] = await Promise.all([dbPorProyecto('espacios', p.id), dbPorProyecto('fotos', p.id), dbPorProyecto('partidas', p.id)]);
+  const [todosEsp, fotos, partidas, seg] = await Promise.all([dbPorProyecto('espacios', p.id), dbPorProyecto('fotos', p.id), dbPorProyecto('partidas', p.id), dbPorProyecto('seguimiento', p.id)]);
   todosEsp.sort((a, b) => (a.orden || 0) - (b.orden || 0) || (a.creado || '').localeCompare(b.creado || ''));
   const ids = new Set(o.sel || todosEsp.map(s => s.id));
   const espacios = todosEsp.filter(s => ids.has(s.id));
@@ -327,7 +328,7 @@ async function vistaReporte(id) {
       ${fs.length ? await htmlFotos(fs) : ''}
     </section>`;
   }
-  const gen = o.fotosGenerales && o.fotos ? ordenFotos.filter(f => !f.espacioId || !nombreEsp[f.espacioId]) : [];
+  const gen = o.fotosGenerales && o.fotos ? ordenFotos.filter(f => !f.bitacoraId && (!f.espacioId || !nombreEsp[f.espacioId])) : [];
   if (gen.length) detalle += `<section class="rp-espacio"><h3>Fotos generales</h3>${await htmlFotos(gen)}</section>`;
 
   /* Conceptos y presupuesto */
@@ -371,6 +372,20 @@ async function vistaReporte(id) {
       ${pr.condiciones ? `<p><strong>Condiciones:</strong> ${parrafos(pr.condiciones)}</p>` : ''}</section>`;
   }
 
+  /* Estado de pagos (solo pagos; nunca gastos ni utilidad) */
+  const pagosL = seg.filter(m => m.tipo === 'pago').sort((a, b) => (a.fecha || '').localeCompare(b.fecha || ''));
+  let bloquePagos = '';
+  if (o.pagos && pagosL.length) {
+    const cobrado = pagosL.reduce((a, m) => a + (m.monto || 0), 0);
+    const tp = excluidos === 0 ? await totalPresupuestoProyecto(p) : { total: null };
+    const fila = (a, b) => `<tr><td>${a}</td><td class="n">${b}</td></tr>`;
+    bloquePagos = `<section class="rp-bloque"><h2>Estado de pagos</h2>
+      <table class="rp-tabla"><thead><tr><th>Fecha</th><th>Concepto</th><th>Forma de pago</th><th class="n">Monto</th></tr></thead>
+      <tbody>${pagosL.map(m => `<tr><td>${esc(fecha(m.fecha))}</td><td>${esc(etiqueta(CONCEPTOS_PAGO, m.concepto))}${m.nota ? `<small>${esc(m.nota)}</small>` : ''}</td><td>${esc(etiqueta(METODOS_PAGO, m.metodo))}</td><td class="n">${formatoPesos(m.monto)}</td></tr>`).join('')}</tbody>
+      <tfoot><tr><td colspan="3">Total cobrado</td><td class="n">${formatoPesos(cobrado)}</td></tr></tfoot></table>
+      ${tp.total != null ? `<table class="rp-tabla rp-resumen"><tbody>${fila('Presupuesto total' + (tp.conIva ? ' (con IVA)' : ' (sin IVA)'), formatoPesos(tp.total))}${fila('Cobrado', formatoPesos(cobrado))}${fila(tp.total - cobrado < 0 ? 'Saldo a favor del cliente' : 'Saldo por pagar', formatoPesos(Math.abs(tp.total - cobrado)))}</tbody></table>` : ''}</section>`;
+  }
+
   /* Firmas */
   const f = p.firmaCliente;
   const bloqueFirmas = o.firmas ? `<section class="rp-firmas">
@@ -397,7 +412,7 @@ async function vistaReporte(id) {
     </section>
     ${espacios.length ? `<section class="rp-bloque"><h2>Espacios</h2>${tablaEsp}</section>` : ''}
     ${detalle ? `<section class="rp-bloque"><h2>Detalle por espacio</h2>${detalle}</section>` : ''}
-    ${bloqueConceptos}${bloquePres}
+    ${bloqueConceptos}${bloquePres}${bloquePagos}
     <p class="small rp-aviso">${esc(AVISO_MEDIDAS)} La superficie de muros es bruta: no descuenta puertas ni ventanas.</p>
     ${bloqueFirmas}`;
 
