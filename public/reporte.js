@@ -273,11 +273,14 @@ async function vistaReporte(id) {
   main().innerHTML = `
     <div class="reporte-barra">
       <a class="btn ghost" href="#/proyecto/${p.id}/reporte">← Volver</a>
-      <span class="muted" id="rp-estado">Preparando fotos…</span>
-      <button class="btn primary" id="rp-imprimir" disabled>Guardar como PDF</button>
+      <span class="muted" id="rp-estado">Preparando el PDF…</span>
+      <button class="btn primary" id="rp-descargar" disabled>Descargar PDF</button>
+      <button class="btn" id="rp-compartir" hidden disabled>Compartir PDF</button>
+      <a class="btn" id="rp-abrir" target="_blank" rel="noopener" hidden>Abrir PDF</a>
+      <button class="btn ghost" id="rp-imprimir" disabled>Imprimir</button>
     </div>
-    <p class="reporte-ayuda no-print">Se abrirá la ventana de impresión: elige <strong>Guardar como PDF</strong> como destino.
-      Luego podrás compartir el archivo desde tu tablet.</p>
+    <p class="reporte-ayuda no-print">Esta es la vista previa. El PDF se prepara solo; cuando el botón <strong>Descargar PDF</strong> se active, tócalo.
+      El archivo queda en la carpeta Descargas de la tablet.</p>
     <article class="hoja" id="hoja"></article>`;
 
   /* Fotos: con las medidas dibujadas si así se pidió */
@@ -406,7 +409,27 @@ async function vistaReporte(id) {
   await Promise.all(imgs.map(im => im.decode ? im.decode().catch(() => {}) : Promise.resolve()));
   const est = $('#rp-estado'), btn = $('#rp-imprimir');
   if (!btn) return;
-  est.textContent = `${espacios.length} espacio(s) · ${imgs.length} imagen(es)`;
   btn.disabled = false;
   btn.addEventListener('click', () => window.print());
+
+  /* PDF propio: se genera solo al abrir la vista, para que descargar y compartir sean inmediatos */
+  const dl = $('#rp-descargar'), comp = $('#rp-compartir'), abrir = $('#rp-abrir');
+  try {
+    const archivo = await generarPDF(p, async f => { if (est.isConnected) est.textContent = `Preparando el PDF… ${Math.round(f * 100)} %`; await new Promise(r => setTimeout(r, 0)); });
+    if (!dl.isConnected) return;
+    abrir.href = urlDe(archivo); abrir.hidden = false;
+    est.textContent = `PDF listo (${(archivo.size / 1048576).toFixed(1)} MB)`;
+    dl.disabled = false;
+    dl.addEventListener('click', () => { descargarArchivo(archivo); aviso('Descargando ' + archivo.name + '. Búscalo en la carpeta Descargas.'); });
+    if (navigator.canShare && navigator.canShare({ files: [archivo] })) {
+      comp.hidden = false; comp.disabled = false;
+      comp.addEventListener('click', async () => {
+        try { await navigator.share({ files: [archivo], title: archivo.name }); }
+        catch (e) { if (e.name !== 'AbortError') aviso('No se pudo compartir: ' + e.message, 'error'); }
+      });
+    }
+  } catch (e) {
+    console.error(e);
+    if (est.isConnected) est.textContent = 'No se pudo preparar el PDF: ' + e.message;
+  }
 }
