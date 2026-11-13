@@ -139,32 +139,48 @@ async function dbExportarPartes() {
   return partes;
 }
 
-/* Restaurar: reemplaza todo. Si algo falla, no se cambia nada. */
+/* Restaurar: reemplaza todo. Si algo falla, no se cambia nada.
+   Primero se revisa y prepara todo; solo después se toca la base, y cualquier error
+   dentro de la operación la cancela por completo. Devuelve cuántas fotos se omitieron. */
 async function dbImportar(respaldo) {
-  if (!respaldo || respaldo.app !== 'ObraPro' || !respaldo.datos) {
+  if (!respaldo || respaldo.app !== 'ObraPro' || !respaldo.datos || typeof respaldo.datos !== 'object') {
     throw new Error('El archivo no es una copia de seguridad de ObraPro.');
   }
+  const idValido = o => o && typeof o === 'object' && ((typeof o.id === 'string' && o.id) || (typeof o.id === 'number' && isFinite(o.id)));
   const datos = {};
-  for (const t of TABLAS) datos[t] = (respaldo.datos[t] || []).filter(o => o && o.id);
+  for (const t of TABLAS) {
+    const lista = respaldo.datos[t] == null ? [] : respaldo.datos[t];
+    if (!Array.isArray(lista)) throw new Error('La copia está dañada (sección "' + t + '").');
+    if (lista.some(o => !idValido(o))) throw new Error('La copia está dañada: hay registros sin identificador válido en "' + t + '".');
+    datos[t] = lista;
+  }
   /* Fotos: del texto base64 de vuelta a archivos. Las que no traen imagen se omiten. */
+  const total = datos.fotos.length;
   datos.fotos = datos.fotos.map(f => {
     const { imagenData, miniaturaData, ...resto } = f;
-    if (imagenData) resto.imagen = dataURLABlob(imagenData);
-    if (miniaturaData) resto.miniatura = dataURLABlob(miniaturaData);
+    if (typeof imagenData === 'string') resto.imagen = dataURLABlob(imagenData);
+    if (typeof miniaturaData === 'string') resto.miniatura = dataURLABlob(miniaturaData);
     return resto;
   }).filter(f => f.imagen);
+  const omitidas = total - datos.fotos.length;
   const db = await abrirDB();
-  return new Promise((resolve, reject) => {
+  await new Promise((resolve, reject) => {
     const tx = db.transaction(TABLAS, 'readwrite');
-    for (const t of TABLAS) {
-      const store = tx.objectStore(t);
-      store.clear();
-      for (const obj of datos[t]) store.put(obj);
-    }
     tx.oncomplete = () => resolve();
     tx.onerror = () => reject(tx.error);
     tx.onabort = () => reject(tx.error || new Error('No se pudo restaurar la copia.'));
+    try {
+      for (const t of TABLAS) {
+        const store = tx.objectStore(t);
+        store.clear();
+        for (const obj of datos[t]) store.put(obj);
+      }
+    } catch (e) {
+      try { tx.abort(); } catch (e2) { /* ya cancelada */ }
+      reject(e);
+    }
   });
+  return { fotosOmitidas: omitidas };
 }
 
 function nuevoId() {

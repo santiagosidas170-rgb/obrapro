@@ -3,7 +3,9 @@
 Aplicación web progresiva (PWA) para levantamientos de obra y remodelación.
 Funciona sin internet y guarda los datos solo en el dispositivo.
 
-**Versión:** 0.9.0 (Etapa 7: reporte)
+**Versión:** 1.0.0 (Etapa 8: pruebas y respaldo)
+
+**Documentación:** [GUIA.md](GUIA.md) (cómo usar la app y hacer copias de seguridad) · [PRUEBAS.md](PRUEBAS.md) (qué se probó, qué falta probar en la tablet)
 
 > Las medidas son capturadas por el usuario y deben verificarse en campo.
 
@@ -29,6 +31,8 @@ Funciona sin internet y guarda los datos solo en el dispositivo.
 ## Estructura
 
 ```
+GUIA.md, PRUEBAS.md  Guía de uso y registro de pruebas
+pruebas/            Pruebas automáticas (ejecutar.sh las corre todas)
 wrangler.jsonc      Configuración de Cloudflare (publica la carpeta public/)
 public/             Todo lo que se publica
   index.html        Estructura de la app
@@ -37,7 +41,8 @@ public/             Todo lo que se publica
   db.js             Guardado local y copias de seguridad (con fotos)
   fotos.js          Fotos: captura, galería y dibujo de medidas
   presupuesto.js    Catálogo, conceptos del proyecto y presupuesto
-  reporte.js        Datos del contratista, firma y reporte en PDF
+  reporte.js        Datos del contratista, firma y vista del reporte
+  pdfreporte.js     Generador del archivo PDF dentro de la app
   app.js            Pantallas y navegación
   sw.js             Funcionamiento sin internet
   manifest.json     Instalación en la pantalla de inicio
@@ -63,6 +68,10 @@ Configuración del proyecto en Cloudflare:
 
 Sube el número de versión de `CACHE` en la primera línea de `public/sw.js`.
 La versión nueva aparece la segunda vez que se abre la app con internet.
+
+## Pruebas
+
+`bash pruebas/ejecutar.sh` corre las 421 comprobaciones automáticas (fórmulas, pantallas, fotos, presupuesto, reporte, copias de seguridad). Detalle en [PRUEBAS.md](PRUEBAS.md). Usan Chromium de escritorio; la revisión en la tablet real es manual (lista en PRUEBAS.md).
 
 ## Privacidad
 

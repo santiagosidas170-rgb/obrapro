@@ -3,7 +3,7 @@
    guardado local y copia de seguridad. */
 'use strict';
 
-const VERSION_APP = '0.9.2 (Etapa 7: reporte PDF propio)';
+const VERSION_APP = '1.0.0 (Etapa 8: pruebas y respaldo)';
 
 /* Íconos dibujados (la tipografía Lato no incluye ✓ ni ✕) */
 const ICONO_CHECK = '<svg class="ico-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>';
@@ -898,18 +898,20 @@ async function vistaAjustes() {
     let datos;
     try { datos = JSON.parse(await f.text()); }
     catch (err) { aviso('El archivo no se puede leer como copia de seguridad.', 'error'); return; }
-    if (!datos || datos.app !== 'ObraPro') { aviso('El archivo no es una copia de seguridad de ObraPro.', 'error'); return; }
-    const n = (datos.datos.proyectos || []).length, nf = (datos.datos.fotos || []).length;
+    if (!datos || datos.app !== 'ObraPro' || !datos.datos || typeof datos.datos !== 'object') { aviso('El archivo no es una copia de seguridad de ObraPro.', 'error'); return; }
+    const cuenta = t => (Array.isArray(datos.datos[t]) ? datos.datos[t].length : 0);
+    const n = cuenta('proyectos'), nf = cuenta('fotos');
     const ok = await confirmar('Restaurar copia',
       `La copia del ${fecha(datos.exportado)} tiene ${n} proyecto(s) y ${nf} foto(s). Se reemplazarán TODOS los datos actuales de la app. ¿Continuar?`,
       'Restaurar');
     if (!ok) return;
     try {
-      await dbImportar(datos);
+      const r = await dbImportar(datos);
       await cargarAjustes();
-      aviso('Copia restaurada.');
+      if (datos.exportado) { ajustes.ultimoRespaldo = datos.exportado; await guardarAjustes(); }
+      aviso(r.fotosOmitidas ? `Copia restaurada, pero ${r.fotosOmitidas} foto(s) no se pudieron recuperar porque el archivo no las traía completas.` : 'Copia restaurada.', r.fotosOmitidas ? 'error' : '');
       location.hash = '#/proyectos';
-    } catch (err) { aviso('No se pudo restaurar: ' + err.message, 'error'); }
+    } catch (err) { aviso('No se pudo restaurar: ' + err.message + ' Tus datos actuales no se cambiaron.', 'error'); }
   });
 
   const pers = $('#persistir');
