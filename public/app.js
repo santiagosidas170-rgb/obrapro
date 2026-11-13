@@ -3,7 +3,7 @@
    guardado local y copia de seguridad. */
 'use strict';
 
-const VERSION_APP = '0.8.0 (Etapa 6: presupuesto)';
+const VERSION_APP = '0.9.0 (Etapa 7: reporte)';
 
 /* Íconos dibujados (la tipografía Lato no incluye ✓ ni ✕) */
 const ICONO_CHECK = '<svg class="ico-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>';
@@ -197,6 +197,7 @@ async function enrutar() {
       case 'partida': await vistaPartida(id); break;
       case 'concepto': await vistaConcepto(id); break;
       case 'catalogo': await vistaCatalogo(); break;
+      case 'reporte': await vistaReporte(id); break;
       case 'ajustes': await vistaAjustes(); break;
       default: location.hash = '#/proyectos'; return;
     }
@@ -217,7 +218,7 @@ async function enrutar() {
 }
 
 function marcarMenu(vista) {
-  const mapa = { proyecto: 'proyectos', espacio: 'proyectos', foto: 'proyectos', partida: 'proyectos', concepto: 'catalogo', nuevo: 'proyectos' };
+  const mapa = { proyecto: 'proyectos', espacio: 'proyectos', foto: 'proyectos', partida: 'proyectos', reporte: 'proyectos', concepto: 'catalogo', nuevo: 'proyectos' };
   const activo = mapa[vista] || vista;
   $$('#nav a[data-view]').forEach(a => {
     const on = a.dataset.view === activo;
@@ -391,7 +392,7 @@ const PESTANAS = [
   ['fotos', 'Fotos', true],
   ['conceptos', 'Conceptos', true],
   ['presupuesto', 'Presupuesto', true],
-  ['reporte', 'Reporte', false]
+  ['reporte', 'Reporte', true]
 ];
 
 async function vistaProyecto(id, pestana) {
@@ -423,6 +424,7 @@ async function vistaProyecto(id, pestana) {
   else if (pestana === 'fotos') await pestanaFotos(p);
   else if (pestana === 'conceptos') await pestanaConceptos(p);
   else if (pestana === 'presupuesto') await pestanaPresupuesto(p);
+  else if (pestana === 'reporte') await pestanaReporte(p);
   else pestanaDatos(p);
 }
 
@@ -832,6 +834,8 @@ async function vistaAjustes() {
 
     ${seccionAjustesPresupuesto()}
 
+    ${seccionAjustesReporte()}
+
     <section class="card">
       <h2>Cámara y fotos</h2>
       <p>Las fotos se guardan comprimidas (máximo 1600 px) solo en esta tablet.</p>
@@ -848,6 +852,7 @@ async function vistaAjustes() {
     <section class="card"><h2>Acerca de</h2><p>ObraPro · versión ${esc(VERSION_APP)}</p></section>`;
 
   conectarAjustesPresupuesto();
+  conectarAjustesReporte();
   $('#a-unidad').addEventListener('change', e => { ajustes.unidad = e.target.value; programarGuardado(guardarAjustes, 0); });
   $('#a-resp').addEventListener('input', e => { ajustes.responsable = e.target.value.trim(); programarGuardado(guardarAjustes); });
 

@@ -3,7 +3,7 @@
    Estrategia: muestra la copia guardada al instante y, si hay internet,
    descarga la versión nueva en segundo plano (se verá al volver a abrir).
    IMPORTANTE: al publicar cambios, sube el número de versión de CACHE. */
-const CACHE = 'obrapro-v0.8.0';
+const CACHE = 'obrapro-v0.9.0';
 
 /* No se guarda './index.html' aparte: Cloudflare lo redirige a './' y un
    Service Worker no puede entregar respuestas redirigidas al navegar. */
@@ -14,6 +14,7 @@ const ARCHIVOS = [
   './db.js',
   './fotos.js',
   './presupuesto.js',
+  './reporte.js',
   './app.js',
   './manifest.json',
   './logo.png',

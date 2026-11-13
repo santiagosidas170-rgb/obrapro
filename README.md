@@ -3,7 +3,7 @@
 Aplicación web progresiva (PWA) para levantamientos de obra y remodelación.
 Funciona sin internet y guarda los datos solo en el dispositivo.
 
-**Versión:** 0.8.0 (Etapa 6: presupuesto)
+**Versión:** 0.9.0 (Etapa 7: reporte)
 
 > Las medidas son capturadas por el usuario y deben verificarse en campo.
 
@@ -19,7 +19,8 @@ Funciona sin internet y guarda los datos solo en el dispositivo.
 - Catálogo de conceptos con **tus propios precios** (material y mano de obra por unidad). ObraPro no trae precios: solo ofrece una lista de conceptos básicos, sin precios, para llenar.
 - Conceptos de cada proyecto con cantidad **medida, estimada o confirmada** (la medida se toma de un espacio: piso, muros o perímetro, y avisa si luego cambia), desperdicio solo sobre el material y subtotal.
 - Presupuesto: materiales, mano de obra, costo directo, indirectos y utilidad (porcentajes configurables), IVA que **no se suma sin que lo confirmes**, total estimado en MXN, notas, vigencia y condiciones.
-- Guardado automático en el dispositivo (IndexedDB) y copia de seguridad que incluye fotos, catálogo, conceptos y presupuestos (descargar, compartir, restaurar).
+- Reporte en PDF: eliges qué **espacios** y qué contenido incluir (fotos con las medidas dibujadas, conceptos, presupuesto, recuadros de firma). Lleva tus datos, logo y firma (se capturan en Ajustes) y la firma del cliente tomada en la tablet con la fecha. Se genera con la ventana de impresión del navegador: elige "Guardar como PDF".
+- Guardado automático en el dispositivo (IndexedDB) y copia de seguridad que incluye fotos, catálogo, conceptos, presupuestos, logo y firmas (descargar, compartir, restaurar).
 - Funcionamiento sin conexión (Service Worker).
 - Pantalla de bienvenida con el logo (toca para saltarla) y paleta tomada del logo: grafito cálido y bronce `#9f7a5a`.
 - Tipografía Lato (incluida en la app), adaptable a celular y tablet, con animaciones suaves que se desactivan
@@ -36,6 +37,7 @@ public/             Todo lo que se publica
   db.js             Guardado local y copias de seguridad (con fotos)
   fotos.js          Fotos: captura, galería y dibujo de medidas
   presupuesto.js    Catálogo, conceptos del proyecto y presupuesto
+  reporte.js        Datos del contratista, firma y reporte en PDF
   app.js            Pantallas y navegación
   sw.js             Funcionamiento sin internet
   manifest.json     Instalación en la pantalla de inicio
