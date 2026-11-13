@@ -88,7 +88,7 @@ function seccionAjustesReporte() {
       <label class="field"><span>Correo</span><input id="r-correo" type="email" inputmode="email" value="${esc(r.correo)}"></label>
     </div>
     <h3>Logo</h3>
-    <div class="logo-prev" id="r-logo-prev">${r.logo ? `<img src="${r.logo}" alt="Tu logo">` : '<span class="muted">Sin logo</span>'}</div>
+    <div class="logo-prev" id="r-logo-prev">${r.logo ? `<img src="${r.logo}" alt="Tu logo">` : '<span class="muted">Sin logo propio: el reporte usa el logo de ObraPro</span>'}</div>
     <div class="actions">
       <label class="btn" for="r-logo-file">${r.logo ? 'Cambiar logo…' : 'Elegir logo…'}</label>
       <input type="file" id="r-logo-file" accept="image/*" hidden>
@@ -124,7 +124,7 @@ function conectarAjustesReporte() {
   });
   $('#r-logo-quitar').addEventListener('click', async () => {
     rep().logo = ''; await guardarAjustes();
-    $('#r-logo-prev').innerHTML = '<span class="muted">Sin logo</span>';
+    $('#r-logo-prev').innerHTML = '<span class="muted">Sin logo propio: el reporte usa el logo de ObraPro</span>';
     $('#r-logo-quitar').hidden = true; aviso('Logo quitado.');
   });
 
@@ -380,7 +380,7 @@ async function vistaReporte(id) {
   const contacto = [c.telefono, c.correo].filter(Boolean).join(' · ');
   $('#hoja').innerHTML = `
     <header class="rp-encabezado">
-      <div class="rp-marca">${c.logo ? `<img src="${c.logo}" alt="Logo">` : ''}
+      <div class="rp-marca"><img src="${c.logo || 'logo.png'}" alt="Logo">
         <div><strong>${esc(c.empresa)}</strong>${contacto ? `<span>${esc(contacto)}</span>` : ''}</div></div>
       <div class="rp-titulo"><h1>Reporte de levantamiento</h1><span>${esc(fecha(p.fecha || hoy()))}</span></div>
     </header>
