@@ -94,5 +94,25 @@ eq('sin presupuesto: por cobrar y diferencia son null', R3.porCobrar === null &&
 eq('sin presupuesto: utilidad negativa posible', R3.utilidadReal, -2000);
 eq('sin datos: todo en cero', JSON.stringify(c.resumenObra()), JSON.stringify({cobrado:0,gastado:0,porCategoria:{},porCobrar:null,avanceCobro:null,diferenciaCosto:null,utilidadReal:0}));
 eq('ignora montos no enteros o vacíos', c.resumenObra({pagos:[{monto:1000},{monto:null},{monto:12.5},{}]}).cobrado, 1000);
+// ---- Listas de materiales y de mano de obra (Etapa 10) ----
+const LP = [
+  {id:'a',descripcion:'Pintura',categoria:'Pintura',espacioId:'e1',unidad:'m2',cantidad:10,desperdicio:5,precioMaterial:10000,precioManoObra:5000,tipoCantidad:'confirmada'},
+  {id:'b',descripcion:'Limpieza',categoria:'Limpieza',espacioId:null,unidad:'servicio',cantidad:1,desperdicio:0,precioMaterial:null,precioManoObra:100000,tipoCantidad:'estimada'},
+  {id:'c',descripcion:'Cable',categoria:'Instalaciones eléctricas',espacioId:'e1',unidad:'m',cantidad:20,desperdicio:10,precioMaterial:1500,precioManoObra:0,tipoCantidad:'confirmada'},
+  {id:'d',descripcion:'Sin precios',categoria:'Otros',espacioId:null,unidad:'pza',cantidad:3,desperdicio:0,precioMaterial:null,precioManoObra:null,tipoCantidad:'estimada'},
+  {id:'e',descripcion:'Sin cantidad',categoria:'Otros',espacioId:null,unidad:'pza',cantidad:null,desperdicio:0,precioMaterial:500,precioManoObra:0,tipoCantidad:'estimada'}];
+const LL = c.listasObra(LP);
+eq('materiales: pintura, cable, sin precios y sin cantidad (no la limpieza)', LL.materiales.map(f=>f.id).join(','), 'a,c,d,e');
+eq('mano de obra: pintura, limpieza y sin precios (no el cable)', LL.manoObra.map(f=>f.id).join(','), 'a,b,d');
+eq('cantidad a comprar con 5 % de desperdicio', LL.materiales[0].comprar, 10.5);
+eq('cantidad a comprar con 10 % de desperdicio', LL.materiales[1].comprar, 22);
+eq('costo de material de la pintura = $1,050.00', c.formatoPesos(LL.materiales[0].costoMaterial), '$1,050.00');
+eq('costo de mano de obra de la pintura = $500.00', c.formatoPesos(LL.manoObra[0].costoManoObra), '$500.00');
+eq('total de materiales', LL.totalMateriales, 105000 + 33000 + 0 + 0);
+eq('total de mano de obra', LL.totalManoObra, 50000 + 100000);
+eq('concepto sin precios queda marcado', LL.materiales[2].sinPrecio, true);
+eq('concepto sin cantidad queda marcado', LL.materiales[3].sinCantidad, true);
+eq('los totales de las listas suman el costo directo del presupuesto', LL.totalMateriales + LL.totalManoObra, c.calcularPresupuesto(LP,{indirectos:0,utilidad:0,aplicarIva:false,iva:0}).directo);
+eq('proyecto sin conceptos: listas vacías', JSON.stringify(c.listasObra([])), JSON.stringify({materiales:[],manoObra:[],totalMateriales:0,totalManoObra:0}));
 console.log(`Pruebas de cálculo: ${ok} correctas, ${fail} fallidas`);
 process.exit(fail?1:0);

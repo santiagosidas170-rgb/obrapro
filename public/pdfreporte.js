@@ -127,6 +127,26 @@ function cargarURL(src) {
   return new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = () => rej(new Error('imagen')); i.src = src; });
 }
 
+/* Encabezado de la primera página: logo, datos del contratista, título y fecha. */
+async function dibujarEncabezado(H, c, titulo, fechaTxt) {
+  const ctx = () => H.ctx;
+  let xTxt = PDF_M, altoEnc = 100;
+  let logo = null;
+  try { logo = await cargarURL(c.logo || 'logo.png'); } catch (e) { /* sin logo */ }
+  if (logo) {
+    const k = Math.min(300 / logo.naturalWidth, 170 / logo.naturalHeight);
+    const w = logo.naturalWidth * k, h = logo.naturalHeight * k;
+    H.imagen(logo, PDF_M, H.y, w, h); xTxt = PDF_M + w + 24; altoEnc = Math.max(altoEnc, h);
+  }
+  H.fuente(30, true); ctx().fillStyle = T.tinta; ctx().fillText(c.empresa || '', xTxt, H.y + 36);
+  H.fuente(21, false); ctx().fillStyle = T.gris; ctx().fillText([c.telefono, c.correo].filter(Boolean).join(' · '), xTxt, H.y + 70);
+  H.fuente(titulo.length > 22 ? 34 : 42, true); ctx().fillStyle = T.tinta;
+  ctx().fillText(titulo, PDF_W - PDF_M - H.medir(titulo), H.y + 44);
+  H.fuente(23, false); ctx().fillStyle = T.gris;
+  ctx().fillText(fechaTxt, PDF_W - PDF_M - H.medir(fechaTxt), H.y + 80);
+  H.y += altoEnc + 22; ctx().fillStyle = T.marca; ctx().fillRect(PDF_M, H.y, H.ancho, 5); H.y += 20;
+}
+
 /* ---------- Arma las páginas del reporte ---------- */
 
 async function dibujarReporte(p, avanzar) {
@@ -142,21 +162,7 @@ async function dibujarReporte(p, avanzar) {
   const ordenFotos = fotos.slice().sort((a, b) => (a.fecha || '').localeCompare(b.fecha || ''));
 
   /* Encabezado */
-  let xTxt = PDF_M, altoEnc = 100;
-  let logo = null;
-  try { logo = await cargarURL(c.logo || 'logo.png'); } catch (e) { /* sin logo */ }
-  if (logo) {
-    const k = Math.min(300 / logo.naturalWidth, 170 / logo.naturalHeight);
-    const w = logo.naturalWidth * k, h = logo.naturalHeight * k;
-    H.imagen(logo, PDF_M, H.y, w, h); xTxt = PDF_M + w + 24; altoEnc = Math.max(altoEnc, h);
-  }
-  H.fuente(30, true); ctx().fillStyle = T.tinta; ctx().fillText(c.empresa || '', xTxt, H.y + 36);
-  H.fuente(21, false); ctx().fillStyle = T.gris; ctx().fillText([c.telefono, c.correo].filter(Boolean).join(' · '), xTxt, H.y + 70);
-  H.fuente(42, true); ctx().fillStyle = T.tinta;
-  const tit = 'Reporte de levantamiento'; ctx().fillText(tit, PDF_W - PDF_M - H.medir(tit), H.y + 44);
-  H.fuente(23, false); ctx().fillStyle = T.gris;
-  const fch = fecha(p.fecha || hoy()); ctx().fillText(fch, PDF_W - PDF_M - H.medir(fch), H.y + 80);
-  H.y += altoEnc + 22; ctx().fillStyle = T.marca; ctx().fillRect(PDF_M, H.y, H.ancho, 5); H.y += 20;
+  await dibujarEncabezado(H, c, 'Reporte de levantamiento', fecha(p.fecha || hoy()));
   await avanzar(0.1);
 
   /* Datos */
@@ -355,5 +361,37 @@ async function generarPDF(p, avanzar = async () => {}) {
   const paginas = await dibujarReporte(p, avanzar);
   const blob = await armarPDF(paginas, `Reporte - ${p.nombre}`);
   const nombre = `Reporte - ${p.nombre} - ${hoy()}`.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim() + '.pdf';
+  return new File([blob], nombre, { type: 'application/pdf' });
+}
+
+/* ---------- PDF de la lista de materiales o de mano de obra ---------- */
+
+async function generarPDFLista(p, tipo, grupos, totalTxt) {
+  const c = datosContratista();
+  if (document.fonts && document.fonts.load) { try { await Promise.all([document.fonts.load('400 20px Lato'), document.fonts.load('700 20px Lato')]); } catch (e) { /* respaldo */ } }
+  const mat = tipo === 'materiales';
+  const H = new HojaPDF();
+  await dibujarEncabezado(H, c, mat ? 'Lista de materiales' : 'Lista de mano de obra', fecha(hoy()));
+  H.h2('Proyecto');
+  H.filaDato('Proyecto', p.nombre); H.filaDato('Cliente', p.cliente); H.filaDato('Dirección', p.direccion);
+  const cols = mat
+    ? [{ t: 'Concepto', f: .38, neg: true }, { t: 'Cantidad', f: .17 }, { t: 'A comprar', f: .2 }, { t: 'Costo', f: .25, ali: 'right' }]
+    : [{ t: 'Concepto', f: .5, neg: true }, { t: 'Cantidad', f: .25 }, { t: 'Costo', f: .25, ali: 'right' }];
+  for (const g of grupos) {
+    H.cabe(260); H.h2(g.titulo);
+    H.tabla(cols, g.filas.map(f => [{ t: f.descripcion, sub: f.sub, neg: true }, f.cantidadTxt, ...(mat ? [f.comprarTxt] : []), f.costoTxt]),
+      { pie: mat ? ['Subtotal', '', '', g.totalTxt] : ['Subtotal', '', g.totalTxt] });
+  }
+  H.cabe(120); H.y += 10;
+  H.fuente(30, true); H.ctx.fillStyle = T.tinta;
+  const tt = (mat ? 'Total de materiales: ' : 'Total de mano de obra: ') + totalTxt;
+  H.ctx.fillText(tt, PDF_W - PDF_M - H.medir(tt), H.y + 30); H.y += 60;
+  H.parrafo('Costos directos, sin indirectos, utilidad ni IVA. Las cantidades dependen de las medidas capturadas y deben verificarse en obra.', { px: 19, color: T.gris });
+  H.paginas.forEach((cv, i) => {
+    const x = cv.getContext('2d'); x.font = '400 18px Lato, Arial, sans-serif'; x.fillStyle = '#8a8176';
+    const t = `${p.nombre} · Página ${i + 1} de ${H.paginas.length}`; x.fillText(t, (PDF_W - x.measureText(t).width) / 2, PDF_H - 50);
+  });
+  const blob = await armarPDF(H.paginas, `${mat ? 'Lista de materiales' : 'Lista de mano de obra'} - ${p.nombre}`);
+  const nombre = `${mat ? 'Lista de materiales' : 'Lista de mano de obra'} - ${p.nombre} - ${hoy()}`.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim() + '.pdf';
   return new File([blob], nombre, { type: 'application/pdf' });
 }

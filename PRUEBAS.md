@@ -6,18 +6,19 @@ Se corren con `bash pruebas/ejecutar.sh` (necesita Node.js, Playwright con Chrom
 
 | Archivo | Comprobaciones | Qué cubre |
 | --- | --- | --- |
-| `test_calc.js` | 78 | Fórmulas: superficies (rectangular, irregular, cm, pies), perímetro, muros, dinero en centavos, desperdicio, indirectos, utilidad, IVA, lectura de precios y porcentajes, resumen de cobros y gastos. |
+| `test_calc.js` | 90 | Fórmulas: superficies (rectangular, irregular, cm, pies), perímetro, muros, dinero en centavos, desperdicio, indirectos, utilidad, IVA, lectura de precios y porcentajes, resumen de cobros y gastos, listas de materiales y de mano de obra. |
 | `e2e.js` | 31 | Proyectos, espacios, validaciones, borrador, archivar, eliminar en cascada, copia y restauración básica, sin conexión. |
 | `design.js` | 36 | Diseño, responsive, animaciones, íconos, manifiesto y caché del Service Worker. |
 | `splash.js` | 22 | Pantalla de bienvenida y logo. |
 | `fotos-test.js` | 85 | Fotos: carga, compresión, orientación, galería, dibujo de medidas con ratón y toque, deshacer, guardar imagen. |
 | `presupuesto-test.js` | 90 | Catálogo, conceptos, cantidades medida/estimada/confirmada, presupuesto, IVA con confirmación, caso de referencia $10,792.73. |
 | `seguimiento-test.js` | 48 | Actualización de la base vieja sin perder datos, pagos, gastos, bitácora con fotos, resumen financiero, estado de pagos en el reporte (sin gastos), copia y borrado en cascada. |
+| `listas-test.js` | 32 | Listas de materiales y mano de obra: cantidades con desperdicio, piezas redondeadas, totales, agrupación, copiar texto, PDF (1 y varias páginas), celular y tablet. |
 | `reporte-test.js` | 56 | Datos y firmas, selección de espacios, contenido del reporte, PDF propio y por impresión, tablet y celular. |
 | `backup-test.js` | 24 | Copia con 40 fotos (7 MB): ida y vuelta idéntica byte a byte, archivos dañados, copia vieja, registros inválidos. |
 | `tabla-ancho.js` | 12 | La tabla de conceptos cabe completa en cada tamaño de pantalla. |
 
-**Total: 482 comprobaciones, todas correctas** en la última corrida.
+**Total: 526 comprobaciones, todas correctas** en la última corrida.
 
 ### Problemas que las pruebas encontraron y se corrigieron
 
@@ -44,6 +45,7 @@ Todo lo que depende del equipo real. Esta lista es para revisarla en la Huawei M
 - [ ] Probar con un proyecto real grande (muchas fotos) y revisar que no se trabe ni se llene el almacenamiento.
 - [ ] Registrar un pago y un gasto con el teclado físico y revisar que el resumen cuadre con tus cuentas.
 - [ ] Crear una entrada de bitácora con una foto tomada con la cámara.
+- [ ] Abrir la pestaña Listas, descargar el PDF de materiales y mandar la lista por WhatsApp con Compartir o Copiar texto.
 - [ ] Girar la tablet (vertical y horizontal) y revisar que nada se corte.
 - [ ] Actualización: publicar una versión nueva y confirmar que la tablet la toma (versión en Ajustes).
 

@@ -16,7 +16,7 @@ trap 'kill $SERVIDOR 2>/dev/null' EXIT
 sleep 1
 malas=0
 echo "== Fórmulas";   node pruebas/test_calc.js "$PWD/public/calc.js" | tail -1 || malas=1
-for t in e2e design splash fotos-test presupuesto-test seguimiento-test reporte-test backup-test tabla-ancho; do
+for t in e2e design splash fotos-test presupuesto-test seguimiento-test listas-test reporte-test backup-test tabla-ancho; do
   echo "== $t"
   node "pruebas/$t.js" > "$SALIDA/$t.log" 2>&1 && echo "   bien ($(grep -c '✔' "$SALIDA/$t.log") comprobaciones)" || { echo "   FALLÓ, mira $SALIDA/$t.log"; grep '✘' "$SALIDA/$t.log" | head -5; malas=1; }
 done

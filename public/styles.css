@@ -713,3 +713,25 @@ dialog h2 { margin-top: 0; }
 .dlg-form .field { margin-bottom: .7rem; }
 .dlg-form textarea, .dlg-form select, .dlg-form input { width: 100%; }
 .error-msg { color: var(--danger); margin: .4rem 0; }
+
+/* ---------- Etapa 10: listas de materiales y mano de obra ---------- */
+.barra-listas { display: flex; align-items: center; justify-content: space-between; gap: .8rem; flex-wrap: wrap; margin-bottom: .8rem; }
+.segmentos { display: inline-flex; background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; padding: 3px; }
+.seg { min-height: var(--tap); padding: 0 1.1rem; background: transparent; color: var(--text-2); border: 0; border-radius: 9px; font: inherit; font-weight: 700; cursor: pointer; }
+.seg.activo { background: var(--accent); color: var(--ink, #1d150c); }
+.grupo-lista { margin-bottom: 1rem; }
+.grupo-lista h3 { display: flex; justify-content: space-between; gap: 1rem; margin: 0 0 .4rem; padding-bottom: .3rem; border-bottom: 2px solid var(--accent); font-size: 1rem; }
+.grupo-lista h3 small { color: var(--text-2); font-size: .95rem; white-space: nowrap; }
+.fila-lista { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: .2rem 1rem; align-items: center; padding: .55rem .2rem; border-bottom: 1px solid var(--border); color: var(--text); text-decoration: none; min-height: var(--tap); }
+.fila-lista:hover { background: var(--surface-2); }
+.fl-main, .fl-cant { display: grid; min-width: 0; }
+.fl-main strong, .fl-main small, .fl-cant small { overflow-wrap: anywhere; }
+.fl-main small, .fl-cant small { color: var(--text-2); font-size: .82rem; }
+.fl-cant { text-align: right; }
+.fl-costo { font-weight: 700; white-space: nowrap; text-align: right; font-variant-numeric: tabular-nums; min-width: 6.5rem; }
+.total-lista { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-top: .8rem; padding: .7rem .2rem; border-top: 2px solid var(--accent); font-size: 1.1rem; }
+@media (max-width: 640px) {
+  .fila-lista { grid-template-columns: minmax(0, 1fr) auto; }
+  .fl-cant { grid-column: 1; grid-row: 2; text-align: left; }
+  .fl-costo { grid-column: 2; grid-row: 1 / span 2; }
+}

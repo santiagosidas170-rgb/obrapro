@@ -175,6 +175,26 @@ function dineroTxt(cents) {
 /* 187500 → "$1,875.00" */
 function formatoPesos(cents) { return '$' + dineroTxt(cents || 0); }
 
+/* ---------- Listas de materiales y de mano de obra (Etapa 10) ----------
+   Una línea por concepto. Un concepto sin ningún precio aparece en las dos listas
+   (marcado "sin precio") para que no se olvide. */
+function listasObra(partidas) {
+  const filas = (partidas || []).map(p => {
+    const r = calcularPartida(p);
+    const desp = Number(p.desperdicio) || 0, cant = Number(p.cantidad) || 0;
+    const sinPrecio = !(p.precioMaterial > 0) && !(p.precioManoObra > 0);
+    return { id: p.id, descripcion: p.descripcion || 'Sin nombre', categoria: p.categoria || 'Otros', espacioId: p.espacioId || null,
+      unidad: p.unidad, cantidad: cant, sinCantidad: !(cant > 0), desperdicio: desp, tipoCantidad: p.tipoCantidad,
+      comprar: Number((cant * (1 + desp / 100)).toFixed(6)),
+      costoMaterial: r.material, costoManoObra: r.manoObra, sinPrecio,
+      llevaMaterial: p.precioMaterial > 0 || sinPrecio, llevaManoObra: p.precioManoObra > 0 || sinPrecio };
+  });
+  const materiales = filas.filter(f => f.llevaMaterial), manoObra = filas.filter(f => f.llevaManoObra);
+  return { materiales, manoObra,
+    totalMateriales: materiales.reduce((a, f) => a + f.costoMaterial, 0),
+    totalManoObra: manoObra.reduce((a, f) => a + f.costoManoObra, 0) };
+}
+
 /* ---------- Seguimiento de obra (Etapa 9) ----------
    Todo en centavos enteros. "total" es el total del presupuesto (null si no hay). */
 function resumenObra({ total = null, costoDirecto = 0, pagos = [], gastos = [] } = {}) {
@@ -193,7 +213,7 @@ function resumenObra({ total = null, costoDirecto = 0, pagos = [], gastos = [] }
 
 
 if (typeof module !== 'undefined') {
-  module.exports = { resumenObra, UNIDADES, redondear2, aMetros, leerNumero, validarMedida, calcularEspacio,
+  module.exports = { listasObra, resumenObra, UNIDADES, redondear2, aMetros, leerNumero, validarMedida, calcularEspacio,
     superficieTramo, centavos, calcularPartida, calcularPresupuesto, formatoMXN,
     leerDinero, leerPorcentaje, leerCantidad, dineroTxt, formatoPesos };
 }

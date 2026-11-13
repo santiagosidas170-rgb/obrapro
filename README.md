@@ -3,7 +3,7 @@
 Aplicación web progresiva (PWA) para levantamientos de obra y remodelación.
 Funciona sin internet y guarda los datos solo en el dispositivo.
 
-**Versión:** 1.1.0 (Etapa 9: seguimiento y pagos)
+**Versión:** 1.2.0 (Etapa 10: listas de materiales y mano de obra)
 
 **Documentación:** [GUIA.md](GUIA.md) (cómo usar la app y hacer copias de seguridad) · [PRUEBAS.md](PRUEBAS.md) (qué se probó, qué falta probar en la tablet)
 
@@ -21,6 +21,7 @@ Funciona sin internet y guarda los datos solo en el dispositivo.
 - Catálogo de conceptos con **tus propios precios** (material y mano de obra por unidad). ObraPro no trae precios: solo ofrece una lista de conceptos básicos, sin precios, para llenar.
 - Conceptos de cada proyecto con cantidad **medida, estimada o confirmada** (la medida se toma de un espacio: piso, muros o perímetro, y avisa si luego cambia), desperdicio solo sobre el material y subtotal.
 - Presupuesto: materiales, mano de obra, costo directo, indirectos y utilidad (porcentajes configurables), IVA que **no se suma sin que lo confirmes**, total estimado en MXN, notas, vigencia y condiciones.
+- Listas de materiales (con desperdicio) y de mano de obra, en PDF, copiadas o compartidas como texto.
 - Seguimiento de obra: estado del proyecto, pagos recibidos, gastos reales, utilidad a la fecha y bitácora con fotos de avance (pestaña Obra).
 - Reporte en PDF: eliges qué **espacios** y qué contenido incluir (fotos con las medidas dibujadas, conceptos, presupuesto, recuadros de firma). Lleva tus datos, logo y firma (se capturan en Ajustes) y la firma del cliente tomada en la tablet con la fecha. Se genera con la ventana de impresión del navegador: elige "Guardar como PDF".
 - Guardado automático en el dispositivo (IndexedDB) y copia de seguridad que incluye fotos, catálogo, conceptos, presupuestos, logo y firmas (descargar, compartir, restaurar).
@@ -42,6 +43,7 @@ public/             Todo lo que se publica
   db.js             Guardado local y copias de seguridad (con fotos)
   fotos.js          Fotos: captura, galería y dibujo de medidas
   presupuesto.js    Catálogo, conceptos del proyecto y presupuesto
+  listas.js         Listas de materiales y de mano de obra
   seguimiento.js    Pestaña Obra: pagos, gastos y bitácora
   reporte.js        Datos del contratista, firma y vista del reporte
   pdfreporte.js     Generador del archivo PDF dentro de la app
@@ -73,7 +75,7 @@ La versión nueva aparece la segunda vez que se abre la app con internet.
 
 ## Pruebas
 
-`bash pruebas/ejecutar.sh` corre las 482 comprobaciones automáticas (fórmulas, pantallas, fotos, presupuesto, reporte, copias de seguridad). Detalle en [PRUEBAS.md](PRUEBAS.md). Usan Chromium de escritorio; la revisión en la tablet real es manual (lista en PRUEBAS.md).
+`bash pruebas/ejecutar.sh` corre las 526 comprobaciones automáticas (fórmulas, pantallas, fotos, presupuesto, reporte, copias de seguridad). Detalle en [PRUEBAS.md](PRUEBAS.md). Usan Chromium de escritorio; la revisión en la tablet real es manual (lista en PRUEBAS.md).
 
 ## Privacidad
 

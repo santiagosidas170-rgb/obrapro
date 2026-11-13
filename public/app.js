@@ -3,7 +3,7 @@
    guardado local y copia de seguridad. */
 'use strict';
 
-const VERSION_APP = '1.1.0 (Etapa 9: seguimiento y pagos)';
+const VERSION_APP = '1.2.0 (Etapa 10: listas de materiales y mano de obra)';
 
 /* Íconos dibujados (la tipografía Lato no incluye ✓ ni ✕) */
 const ICONO_CHECK = '<svg class="ico-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>';
@@ -392,6 +392,7 @@ const PESTANAS = [
   ['fotos', 'Fotos', true],
   ['conceptos', 'Conceptos', true],
   ['presupuesto', 'Presupuesto', true],
+  ['listas', 'Listas', true],
   ['obra', 'Obra', true],
   ['reporte', 'Reporte', true]
 ];
@@ -420,11 +421,13 @@ async function vistaProyecto(id, pestana) {
         : `<span class="tab disabled" title="Disponible en una próxima etapa">${t} <em class="pronto">Pronto</em></span>`).join('')}
     </nav>
     <section id="tab-body"></section>`;
+  { const act = $('.tabs .tab.active'), barra = $('.tabs'); if (act && barra && barra.scrollWidth > barra.clientWidth) barra.scrollLeft = Math.max(0, act.offsetLeft - (barra.clientWidth - act.offsetWidth) / 2); }   /* con muchas pestañas, deja visible la activa */
 
   if (pestana === 'espacios') await pestanaEspacios(p);
   else if (pestana === 'fotos') await pestanaFotos(p);
   else if (pestana === 'conceptos') await pestanaConceptos(p);
   else if (pestana === 'presupuesto') await pestanaPresupuesto(p);
+  else if (pestana === 'listas') await pestanaListas(p);
   else if (pestana === 'obra') await pestanaObra(p);
   else if (pestana === 'reporte') await pestanaReporte(p);
   else pestanaDatos(p);

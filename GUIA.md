@@ -18,13 +18,14 @@ Cuando publiques una versión nueva, abre la app con internet una vez, ciérrala
 4. **Catálogo.** En el menú, captura tus conceptos con **tus propios precios** de material y mano de obra. ObraPro no trae precios; el botón de conceptos básicos solo agrega nombres sin precio.
 5. **Conceptos del proyecto.** Agrega conceptos desde el catálogo. La cantidad puede tomarse de un espacio (piso, muros o perímetro) y queda como **Medida**; si la escribes tú queda **Estimada**, y puedes marcarla **Confirmada**. El desperdicio se aplica solo al material.
 6. **Presupuesto.** Elige indirectos y utilidad. El **IVA no se suma** hasta que lo actives y lo confirmes. Agrega notas, vigencia y condiciones.
-7. **Obra (seguimiento y pagos).** Cuando el proyecto arranca, usa la pestaña **Obra**:
+7. **Listas.** La pestaña **Listas** te da la **lista de materiales** (qué comprar, con el desperdicio ya sumado y las piezas redondeadas hacia arriba) y la **lista de mano de obra** (qué trabajo y cuánto cuesta). Agrúpalas por categoría o por espacio y **descárgalas en PDF**, **cópialas** o **compártelas** como texto por WhatsApp. Toca un concepto para corregir su cantidad o su precio. Son costos directos, sin indirectos, utilidad ni IVA.
+8. **Obra (seguimiento y pagos).** Cuando el proyecto arranca, usa la pestaña **Obra**:
    - **Estado** del proyecto (pendiente, en levantamiento, presupuestado, en ejecución, terminado).
    - **Pagos recibidos:** anota cada anticipo o estimación con su fecha, monto y forma de pago. La app te dice cuánto has cobrado y cuánto falta por cobrar del presupuesto.
    - **Gastos reales:** anota lo que realmente gastas (material, mano de obra, transporte, etc.). La app compara contra el costo directo presupuestado y calcula tu **utilidad a la fecha** (cobrado − gastado).
    - **Bitácora:** un diario de la obra con fecha y notas, y **fotos de avance** en cada entrada.
    - Los gastos y la utilidad son solo para ti y **nunca salen en el reporte**. Si quieres, el reporte puede llevar un **Estado de pagos** para el cliente.
-8. **Reporte.** Elige qué espacios y qué contenido incluir, pide la firma del cliente en la pantalla y toca **Ver reporte → Descargar PDF**.
+9. **Reporte.** Elige qué espacios y qué contenido incluir, pide la firma del cliente en la pantalla y toca **Ver reporte → Descargar PDF**.
 
 ### Cómo se calcula el presupuesto
 
