@@ -146,7 +146,7 @@ async function dibujarReporte(p, avanzar) {
   let logo = null;
   try { logo = await cargarURL(c.logo || 'logo.png'); } catch (e) { /* sin logo */ }
   if (logo) {
-    const k = Math.min(210 / logo.naturalWidth, 120 / logo.naturalHeight);
+    const k = Math.min(300 / logo.naturalWidth, 170 / logo.naturalHeight);
     const w = logo.naturalWidth * k, h = logo.naturalHeight * k;
     H.imagen(logo, PDF_M, H.y, w, h); xTxt = PDF_M + w + 24; altoEnc = Math.max(altoEnc, h);
   }
