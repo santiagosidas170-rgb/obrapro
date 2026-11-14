@@ -3,14 +3,12 @@
    guardado local y copia de seguridad. */
 'use strict';
 
-const VERSION_APP = '0.5.0 (rediseño grafito)';
+const VERSION_APP = '1.2.0 (Etapa 10: listas de materiales y mano de obra)';
 
 /* Íconos dibujados (la tipografía Lato no incluye ✓ ni ✕) */
 const ICONO_CHECK = '<svg class="ico-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>';
 const ICONO_X = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
-const ICONO_CASA = `<svg class="empty-ico" viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M14 32L32 16l18 16M19 29v18h26V29" stroke="#9aa3ae" stroke-width="3.5"/>
-  <rect x="12" y="51" width="40" height="6" rx="1.5" fill="#f2923d"/></svg>`;
+const ICONO_CASA = '<img class="empty-ico" src="logo-sm.png" alt="" width="84" height="87">';
 let _tramoNuevo = -1;
 
 const ESTADOS = [
@@ -141,7 +139,7 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) guard
 window.addEventListener('pagehide', () => { guardarPendiente(); });
 
 /* Ajustes en memoria */
-let ajustes = { id: 'app', unidad: 'm', responsable: '', ultimoRespaldo: null };
+let ajustes = { id: 'app', unidad: 'm', responsable: '', ultimoRespaldo: null, ppIndirectos: 0, ppUtilidad: 0, ppIva: 16 };
 async function cargarAjustes() {
   const a = await dbObtener('ajustes', 'app');
   if (a) ajustes = Object.assign(ajustes, a);
@@ -184,6 +182,7 @@ const main = () => $('#main');
 
 async function enrutar() {
   await guardarPendiente();
+  limpiarVista();
   const partes = (location.hash.replace(/^#\/?/, '') || 'proyectos').split('/');
   const [vista, id, pestana] = partes;
   marcarMenu(vista);
@@ -194,7 +193,11 @@ async function enrutar() {
       case 'nuevo': await vistaNuevoProyecto(); break;
       case 'proyecto': await vistaProyecto(id, pestana || 'datos'); break;
       case 'espacio': await vistaEspacio(id); break;
-      case 'catalogo': vistaCatalogo(); break;
+      case 'foto': await vistaFoto(id); break;
+      case 'partida': await vistaPartida(id); break;
+      case 'concepto': await vistaConcepto(id); break;
+      case 'catalogo': await vistaCatalogo(); break;
+      case 'reporte': await vistaReporte(id); break;
       case 'ajustes': await vistaAjustes(); break;
       default: location.hash = '#/proyectos'; return;
     }
@@ -215,7 +218,7 @@ async function enrutar() {
 }
 
 function marcarMenu(vista) {
-  const mapa = { proyecto: 'proyectos', espacio: 'proyectos', nuevo: 'proyectos' };
+  const mapa = { proyecto: 'proyectos', espacio: 'proyectos', foto: 'proyectos', partida: 'proyectos', reporte: 'proyectos', concepto: 'catalogo', nuevo: 'proyectos' };
   const activo = mapa[vista] || vista;
   $$('#nav a[data-view]').forEach(a => {
     const on = a.dataset.view === activo;
@@ -386,10 +389,12 @@ async function vistaNuevoProyecto() {
 const PESTANAS = [
   ['datos', 'Datos', true],
   ['espacios', 'Espacios', true],
-  ['fotos', 'Fotos', false],
-  ['conceptos', 'Conceptos', false],
-  ['presupuesto', 'Presupuesto', false],
-  ['reporte', 'Reporte', false]
+  ['fotos', 'Fotos', true],
+  ['conceptos', 'Conceptos', true],
+  ['presupuesto', 'Presupuesto', true],
+  ['listas', 'Listas', true],
+  ['obra', 'Obra', true],
+  ['reporte', 'Reporte', true]
 ];
 
 async function vistaProyecto(id, pestana) {
@@ -413,11 +418,18 @@ async function vistaProyecto(id, pestana) {
     <nav class="tabs" aria-label="Secciones del proyecto">
       ${PESTANAS.map(([k, t, on]) => on
         ? `<a href="#/proyecto/${id}/${k}" class="tab${k === pestana ? ' active' : ''}"${k === pestana ? ' aria-current="page"' : ''}>${t}</a>`
-        : `<span class="tab disabled" title="Disponible en una próxima etapa">${t}</span>`).join('')}
+        : `<span class="tab disabled" title="Disponible en una próxima etapa">${t} <em class="pronto">Pronto</em></span>`).join('')}
     </nav>
     <section id="tab-body"></section>`;
+  { const act = $('.tabs .tab.active'), barra = $('.tabs'); if (act && barra && barra.scrollWidth > barra.clientWidth) barra.scrollLeft = Math.max(0, act.offsetLeft - (barra.clientWidth - act.offsetWidth) / 2); }   /* con muchas pestañas, deja visible la activa */
 
   if (pestana === 'espacios') await pestanaEspacios(p);
+  else if (pestana === 'fotos') await pestanaFotos(p);
+  else if (pestana === 'conceptos') await pestanaConceptos(p);
+  else if (pestana === 'presupuesto') await pestanaPresupuesto(p);
+  else if (pestana === 'listas') await pestanaListas(p);
+  else if (pestana === 'obra') await pestanaObra(p);
+  else if (pestana === 'reporte') await pestanaReporte(p);
   else pestanaDatos(p);
 }
 
@@ -580,6 +592,8 @@ async function vistaEspacio(id) {
           ${campoTexto('trabajos', 'Trabajos que se necesitan', s.trabajos, 3)}
           ${campoTexto('observaciones', 'Observaciones', s.observaciones, 3)}
         </fieldset>
+
+        <div id="fotos-espacio"></div>
 
         <div class="actions danger-zone">
           <button type="button" class="btn danger-outline" id="eliminar">Eliminar espacio</button>
@@ -747,32 +761,36 @@ async function vistaEspacio(id) {
   });
 
   $('#eliminar').addEventListener('click', async () => {
-    const ok = await confirmar('Eliminar espacio', `¿Eliminar "${s.nombre || 'este espacio'}"? Esta acción no se puede deshacer.`);
+    const ok = await confirmar('Eliminar espacio', `¿Eliminar "${s.nombre || 'este espacio'}"? Sus fotos se conservarán como fotos sin espacio, y sus conceptos como conceptos sin espacio. Esta acción no se puede deshacer.`);
     if (!ok) return;
     _pendiente && clearTimeout(_pendiente.timer);
     _pendiente = null;
+    await desvincularFotos(s.id);
+    await desvincularPartidas(s.id);
     await dbBorrar('espacios', s.id);
     aviso('Espacio eliminado.');
     location.hash = `#/proyecto/${s.proyectoId}/espacios`;
   });
 
+  montarFotosEspacio($('#fotos-espacio'), s);
   if (!s.nombre) $('#f-nombre').focus();
 }
 
 /* ---------- Catálogo (Etapa 6) ---------- */
 
-function vistaCatalogo() {
-  main().innerHTML = `
-    <header class="page-head"><h1>Catálogo de conceptos</h1></header>
-    <div class="card"><p>El catálogo de trabajos (demolición, pintura, pisos…) llegará en la Etapa 6.</p></div>`;
-}
+/* El catálogo vive en presupuesto.js (vistaCatalogo y vistaConcepto). */
 
 /* ---------- Ajustes ---------- */
 
 async function vistaAjustes() {
   const puedeCompartir = !!(navigator.canShare && window.File &&
     navigator.canShare({ files: [new File(['x'], 'x.json', { type: 'application/json' })] }));
-  let persistente = null, uso = '';
+  let persistente = null, uso = '', usoFotos = '';
+  try {
+    const fs = await dbTodos('fotos');
+    const bytes = fs.reduce((t, x) => t + ((x.imagen && x.imagen.size) || 0) + ((x.miniatura && x.miniatura.size) || 0), 0);
+    usoFotos = `Fotos guardadas: ${fs.length} (${(bytes / 1048576).toFixed(1)} MB).`;
+  } catch (e) { /* sin dato */ }
   if (navigator.storage) {
     try { if (navigator.storage.persisted) persistente = await navigator.storage.persisted(); } catch (e) { /* sin soporte */ }
     try {
@@ -800,7 +818,7 @@ async function vistaAjustes() {
     <section class="card">
       <h2>Copia de seguridad</h2>
       <p>Tus datos solo están en esta tablet. Si borras los datos del navegador o pierdes la tablet, se pierden.
-        Descarga una copia con frecuencia y guárdala fuera de la tablet (correo, USB o computadora).</p>
+        Descarga una copia con frecuencia y guárdala fuera de la tablet (correo, USB o computadora). La copia incluye tus fotos, así que puede pesar varios MB.</p>
       <p class="muted">Última copia: ${ajustes.ultimoRespaldo ? fecha(ajustes.ultimoRespaldo) : 'nunca'}</p>
       <div class="actions">
         <button class="btn primary" id="exportar">Descargar copia</button>
@@ -815,8 +833,18 @@ async function vistaAjustes() {
       <p>${persistente === true ? 'Almacenamiento persistente: <strong>activado</strong>. El navegador no borrará los datos por falta de espacio.'
         : persistente === false ? 'Almacenamiento persistente: <strong>no activado</strong>. El navegador podría borrar datos si se queda sin espacio.'
         : 'Este navegador no informa si el almacenamiento es persistente.'}</p>
-      <p class="muted">${uso}</p>
+      <p class="muted">${uso} ${usoFotos}</p>
       ${persistente === false ? '<button class="btn" id="persistir">Solicitar almacenamiento persistente</button>' : ''}
+    </section>
+
+    ${seccionAjustesPresupuesto()}
+
+    ${seccionAjustesReporte()}
+
+    <section class="card">
+      <h2>Cámara y fotos</h2>
+      <p>Las fotos se guardan comprimidas (máximo 1600 px) solo en esta tablet.</p>
+      ${AYUDA_PERMISOS}
     </section>
 
     <section class="card">
@@ -828,13 +856,15 @@ async function vistaAjustes() {
 
     <section class="card"><h2>Acerca de</h2><p>ObraPro · versión ${esc(VERSION_APP)}</p></section>`;
 
+  conectarAjustesPresupuesto();
+  conectarAjustesReporte();
   $('#a-unidad').addEventListener('change', e => { ajustes.unidad = e.target.value; programarGuardado(guardarAjustes, 0); });
   $('#a-resp').addEventListener('input', e => { ajustes.responsable = e.target.value.trim(); programarGuardado(guardarAjustes); });
 
   const crearArchivo = async () => {
-    const datos = await dbExportar();
+    const partes = await dbExportarPartes();
     const nombre = `obrapro-respaldo-${hoy()}.json`;
-    return new File([JSON.stringify(datos, null, 1)], nombre, { type: 'application/json' });
+    return new File(partes, nombre, { type: 'application/json' });
   };
   const marcarRespaldo = async () => {
     ajustes.ultimoRespaldo = ahora();
@@ -873,18 +903,20 @@ async function vistaAjustes() {
     let datos;
     try { datos = JSON.parse(await f.text()); }
     catch (err) { aviso('El archivo no se puede leer como copia de seguridad.', 'error'); return; }
-    if (!datos || datos.app !== 'ObraPro') { aviso('El archivo no es una copia de seguridad de ObraPro.', 'error'); return; }
-    const n = (datos.datos.proyectos || []).length;
+    if (!datos || datos.app !== 'ObraPro' || !datos.datos || typeof datos.datos !== 'object') { aviso('El archivo no es una copia de seguridad de ObraPro.', 'error'); return; }
+    const cuenta = t => (Array.isArray(datos.datos[t]) ? datos.datos[t].length : 0);
+    const n = cuenta('proyectos'), nf = cuenta('fotos');
     const ok = await confirmar('Restaurar copia',
-      `La copia del ${fecha(datos.exportado)} tiene ${n} proyecto(s). Se reemplazarán TODOS los datos actuales de la app. ¿Continuar?`,
+      `La copia del ${fecha(datos.exportado)} tiene ${n} proyecto(s) y ${nf} foto(s). Se reemplazarán TODOS los datos actuales de la app. ¿Continuar?`,
       'Restaurar');
     if (!ok) return;
     try {
-      await dbImportar(datos);
+      const r = await dbImportar(datos);
       await cargarAjustes();
-      aviso('Copia restaurada.');
+      if (datos.exportado) { ajustes.ultimoRespaldo = datos.exportado; await guardarAjustes(); }
+      aviso(r.fotosOmitidas ? `Copia restaurada, pero ${r.fotosOmitidas} foto(s) no se pudieron recuperar porque el archivo no las traía completas.` : 'Copia restaurada.', r.fotosOmitidas ? 'error' : '');
       location.hash = '#/proyectos';
-    } catch (err) { aviso('No se pudo restaurar: ' + err.message, 'error'); }
+    } catch (err) { aviso('No se pudo restaurar: ' + err.message + ' Tus datos actuales no se cambiaron.', 'error'); }
   });
 
   const pers = $('#persistir');

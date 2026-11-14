@@ -120,7 +120,100 @@ function formatoMXN(cents) {
   return '$' + n.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' MXN';
 }
 
+/* ---------- Dinero y porcentajes escritos por el usuario (Etapa 6) ---------- */
+
+/* Texto → centavos enteros. Acepta "1875", "1,875.00", "$1,234.5", "12,5" y "1.234,50".
+   Devuelve { valor (centavos), error, vacio }. */
+function leerDinero(texto) {
+  const s0 = String(texto == null ? '' : texto).replace(/\s|\$|mxn/gi, '');
+  if (s0 === '') return { valor: null, error: null, vacio: true };
+  if (!/^-?[\d.,]+$/.test(s0) || !/\d/.test(s0)) return { valor: null, error: 'Escribe solo números, por ejemplo 1250.50', vacio: false };
+  if (s0.startsWith('-')) return { valor: null, error: 'El precio no puede ser negativo.', vacio: false };
+  const s = s0;
+  const hayP = s.includes('.'), hayC = s.includes(',');
+  let ent = s, dec = '';
+  if (hayP && hayC) {                                   /* el último separador es el decimal */
+    const sepDec = s.lastIndexOf('.') > s.lastIndexOf(',') ? '.' : ',';
+    const sepMil = sepDec === '.' ? ',' : '.';
+    const partes = s.split(sepDec);
+    if (partes.length !== 2) return { valor: null, error: 'Escribe solo números, por ejemplo 1250.50', vacio: false };
+    ent = partes[0].split(sepMil).join(''); dec = partes[1];
+  } else if (hayP) {
+    const partes = s.split('.');
+    if (partes.length === 2) { ent = partes[0]; dec = partes[1]; } else ent = partes.join('');   /* varios puntos = miles */
+  } else if (hayC) {
+    const partes = s.split(',');
+    if (partes.length === 2 && partes[1].length !== 3) { ent = partes[0]; dec = partes[1]; } else ent = partes.join('');   /* "12,5" decimal; "1,234" miles */
+  }
+  if (!/^\d*$/.test(ent) || !/^\d*$/.test(dec)) return { valor: null, error: 'Escribe solo números, por ejemplo 1250.50', vacio: false };
+  if (dec.length > 2) return { valor: null, error: 'Usa máximo 2 decimales (centavos).', vacio: false };
+  return { valor: parseInt(ent || '0', 10) * 100 + parseInt((dec + '00').slice(0, 2), 10), error: null, vacio: false };
+}
+
+/* Texto → porcentaje de 0 a 100. */
+function leerPorcentaje(texto) {
+  const r = leerNumero(String(texto == null ? '' : texto).replace('%', ''));
+  if (r.vacio || r.error) return r;
+  if (r.valor < 0 || r.valor > 100) return { valor: null, error: 'El porcentaje debe estar entre 0 y 100.', vacio: false };
+  return r;
+}
+
+/* Texto → cantidad (0 o más). */
+function leerCantidad(texto) {
+  const r = leerNumero(texto);
+  if (r.vacio || r.error) return r;
+  if (r.valor < 0) return { valor: null, error: 'La cantidad no puede ser negativa.', vacio: false };
+  return r;
+}
+
+/* 187500 → "1,875.00" (sin signo de pesos) */
+function dineroTxt(cents) {
+  if (cents == null) return '';
+  return (cents / 100).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+/* 187500 → "$1,875.00" */
+function formatoPesos(cents) { return '$' + dineroTxt(cents || 0); }
+
+/* ---------- Listas de materiales y de mano de obra (Etapa 10) ----------
+   Una línea por concepto. Un concepto sin ningún precio aparece en las dos listas
+   (marcado "sin precio") para que no se olvide. */
+function listasObra(partidas) {
+  const filas = (partidas || []).map(p => {
+    const r = calcularPartida(p);
+    const desp = Number(p.desperdicio) || 0, cant = Number(p.cantidad) || 0;
+    const sinPrecio = !(p.precioMaterial > 0) && !(p.precioManoObra > 0);
+    return { id: p.id, descripcion: p.descripcion || 'Sin nombre', categoria: p.categoria || 'Otros', espacioId: p.espacioId || null,
+      unidad: p.unidad, cantidad: cant, sinCantidad: !(cant > 0), desperdicio: desp, tipoCantidad: p.tipoCantidad,
+      comprar: Number((cant * (1 + desp / 100)).toFixed(6)),
+      costoMaterial: r.material, costoManoObra: r.manoObra, sinPrecio,
+      llevaMaterial: p.precioMaterial > 0 || sinPrecio, llevaManoObra: p.precioManoObra > 0 || sinPrecio };
+  });
+  const materiales = filas.filter(f => f.llevaMaterial), manoObra = filas.filter(f => f.llevaManoObra);
+  return { materiales, manoObra,
+    totalMateriales: materiales.reduce((a, f) => a + f.costoMaterial, 0),
+    totalManoObra: manoObra.reduce((a, f) => a + f.costoManoObra, 0) };
+}
+
+/* ---------- Seguimiento de obra (Etapa 9) ----------
+   Todo en centavos enteros. "total" es el total del presupuesto (null si no hay). */
+function resumenObra({ total = null, costoDirecto = 0, pagos = [], gastos = [] } = {}) {
+  const suma = l => l.reduce((a, x) => a + (Number.isInteger(x.monto) ? x.monto : 0), 0);
+  const cobrado = suma(pagos), gastado = suma(gastos);
+  const porCategoria = {};
+  for (const g of gastos) if (Number.isInteger(g.monto)) porCategoria[g.categoria || 'otro'] = (porCategoria[g.categoria || 'otro'] || 0) + g.monto;
+  return {
+    cobrado, gastado, porCategoria,
+    porCobrar: total == null ? null : total - cobrado,
+    avanceCobro: total ? Math.max(0, Math.min(100, Math.round(cobrado * 10000 / total) / 100)) : null,
+    diferenciaCosto: costoDirecto ? costoDirecto - gastado : null,   /* + = gastaste menos de lo presupuestado */
+    utilidadReal: cobrado - gastado                                     /* cobrado − gastado, a la fecha */
+  };
+}
+
+
 if (typeof module !== 'undefined') {
-  module.exports = { UNIDADES, redondear2, aMetros, leerNumero, validarMedida, calcularEspacio,
-    superficieTramo, centavos, calcularPartida, calcularPresupuesto, formatoMXN };
+  module.exports = { listasObra, resumenObra, UNIDADES, redondear2, aMetros, leerNumero, validarMedida, calcularEspacio,
+    superficieTramo, centavos, calcularPartida, calcularPresupuesto, formatoMXN,
+    leerDinero, leerPorcentaje, leerCantidad, dineroTxt, formatoPesos };
 }
