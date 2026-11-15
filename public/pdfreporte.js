@@ -147,6 +147,35 @@ async function dibujarEncabezado(H, c, titulo, fechaTxt) {
   H.y += altoEnc + 22; ctx().fillStyle = T.marca; ctx().fillRect(PDF_M, H.y, H.ancho, 5); H.y += 20;
 }
 
+/* Fotos en dos columnas, con las medidas dibujadas si conMedidas. leyenda(f) devuelve el pie de cada foto. */
+async function fotosEnPDF(H, lista, conMedidas, leyenda) {
+  const ctx = H.ctx;
+  const colW = (H.ancho - 24) / 2;
+  const pie = leyenda || (f => { const cat = etiqueta(CATEGORIAS_FOTO, f.categoria); return cat + (f.descripcion ? ' · ' + f.descripcion : ''); });
+  for (let i = 0; i < lista.length; i += 2) {
+    const fila = [];
+    for (const f of lista.slice(i, i + 2)) {
+      let img;
+      try { img = await cargarImagen(conMedidas && f.anotaciones && f.anotaciones.length ? await renderizarFoto(f) : f.imagen); } catch (e) { continue; }
+      const w = colW, h = Math.min(w * img.naturalHeight / img.naturalWidth, 620);
+      const ww = h < w * img.naturalHeight / img.naturalWidth ? h * img.naturalWidth / img.naturalHeight : w;
+      H.fuente(19, false);
+      fila.push({ img, w: ww, h, capL: H.lineas(pie(f), colW) });
+    }
+    if (!fila.length) continue;
+    const alto = Math.max(...fila.map(f => f.h + 8 + f.capL.length * 26)) + 14;
+    H.cabe(alto);
+    fila.forEach((f, k) => {
+      const x = PDF_M + k * (colW + 24);
+      H.imagen(f.img, x, H.y, f.w, f.h);
+      H.ctx.strokeStyle = '#cfc5b6'; H.ctx.lineWidth = 1.5; H.ctx.strokeRect(x, H.y, f.w, f.h);
+      H.fuente(19, false); H.ctx.fillStyle = T.gris;
+      f.capL.forEach((l, j) => H.ctx.fillText(l, x, H.y + f.h + 24 + j * 26));
+    });
+    H.y += alto;
+  }
+}
+
 /* ---------- Arma las páginas del reporte ---------- */
 
 async function dibujarReporte(p, avanzar) {
@@ -185,32 +214,7 @@ async function dibujarReporte(p, avanzar) {
   await avanzar(0.2);
 
   /* Fotos (con las medidas dibujadas) en dos columnas */
-  const fotosDe = async (lista) => {
-    const colW = (H.ancho - 24) / 2;
-    for (let i = 0; i < lista.length; i += 2) {
-      const fila = [];
-      for (const f of lista.slice(i, i + 2)) {
-        let img;
-        try { img = await cargarImagen(o.medidas && f.anotaciones && f.anotaciones.length ? await renderizarFoto(f) : f.imagen); } catch (e) { continue; }
-        const w = colW, h = Math.min(w * img.naturalHeight / img.naturalWidth, 620);
-        const ww = h < w * img.naturalHeight / img.naturalWidth ? h * img.naturalWidth / img.naturalHeight : w;
-        const cat = etiqueta(CATEGORIAS_FOTO, f.categoria);
-        H.fuente(19, false);
-        fila.push({ img, w: ww, h, cap: cat + (f.descripcion ? ' · ' + f.descripcion : ''), capL: H.lineas(cat + (f.descripcion ? ' · ' + f.descripcion : ''), colW) });
-      }
-      if (!fila.length) continue;
-      const alto = Math.max(...fila.map(f => f.h + 8 + f.capL.length * 26)) + 14;
-      H.cabe(alto);
-      fila.forEach((f, k) => {
-        const x = PDF_M + k * (colW + 24);
-        H.imagen(f.img, x, H.y, f.w, f.h);
-        ctx().strokeStyle = '#cfc5b6'; ctx().lineWidth = 1.5; ctx().strokeRect(x, H.y, f.w, f.h);
-        H.fuente(19, false); ctx().fillStyle = T.gris;
-        f.capL.forEach((l, j) => ctx().fillText(l, x, H.y + f.h + 24 + j * 26));
-      });
-      H.y += alto;
-    }
-  };
+  const fotosDe = lista => fotosEnPDF(H, lista, o.medidas);
 
   const hayDetalle = espacios.some(s => s.trabajos || s.observaciones) || o.fotos;
   if (espacios.length && hayDetalle) {
@@ -393,5 +397,35 @@ async function generarPDFLista(p, tipo, grupos, totalTxt) {
   });
   const blob = await armarPDF(H.paginas, `${mat ? 'Lista de materiales' : 'Lista de mano de obra'} - ${p.nombre}`);
   const nombre = `${mat ? 'Lista de materiales' : 'Lista de mano de obra'} - ${p.nombre} - ${hoy()}`.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim() + '.pdf';
+  return new File([blob], nombre, { type: 'application/pdf' });
+}
+
+/* ---------- PDF de avance de obra (para mandar al cliente) ---------- */
+/* entradas: [{fecha, texto, fotos:[foto]}] ya ordenadas de la más vieja a la más nueva. Sin gastos ni utilidad. */
+
+async function generarPDFAvance(p, entradas, conMedidas) {
+  const c = datosContratista();
+  if (document.fonts && document.fonts.load) { try { await Promise.all([document.fonts.load('400 20px Lato'), document.fonts.load('700 20px Lato')]); } catch (e) { /* respaldo */ } }
+  const H = new HojaPDF();
+  await dibujarEncabezado(H, c, 'Reporte de avance', fecha(hoy()));
+  H.h2('Proyecto');
+  H.filaDato('Proyecto', p.nombre); H.filaDato('Cliente', p.cliente); H.filaDato('Dirección', p.direccion);
+  H.filaDato('Estado', etiqueta(ESTADOS, p.estado)); H.filaDato('Responsable', p.responsable);
+  const desde = entradas[0] && entradas[0].fecha, hasta = entradas[entradas.length - 1] && entradas[entradas.length - 1].fecha;
+  if (desde) H.filaDato('Periodo', desde === hasta ? fecha(desde) : `${fecha(desde)} al ${fecha(hasta)}`);
+  H.h2('Avance');
+  for (const e of entradas) {
+    H.cabe(200);
+    H.fuente(28, true); H.ctx.fillStyle = T.tinta; H.ctx.fillText(fecha(e.fecha), PDF_M, H.y + 28); H.y += 44;
+    H.parrafo(e.texto || '');
+    if (e.fotos.length) await fotosEnPDF(H, e.fotos, conMedidas, f => f.descripcion || '');
+    H.ctx.fillStyle = T.linea; H.ctx.fillRect(PDF_M, H.y + 4, H.ancho, 2); H.y += 24;
+  }
+  H.paginas.forEach((cv, i) => {
+    const x = cv.getContext('2d'); x.font = '400 18px Lato, Arial, sans-serif'; x.fillStyle = '#8a8176';
+    const t = `${p.nombre} · Página ${i + 1} de ${H.paginas.length}`; x.fillText(t, (PDF_W - x.measureText(t).width) / 2, PDF_H - 50);
+  });
+  const blob = await armarPDF(H.paginas, `Reporte de avance - ${p.nombre}`);
+  const nombre = `Reporte de avance - ${p.nombre} - ${hoy()}`.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim() + '.pdf';
   return new File([blob], nombre, { type: 'application/pdf' });
 }

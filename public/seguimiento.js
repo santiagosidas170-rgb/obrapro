@@ -136,7 +136,7 @@ async function pestanaObra(p) {
       </section>
 
       <section class="card" id="ob-bitacora">
-        <div class="row-between"><h3>Bitácora (${bitacora.length})</h3><button class="btn primary" id="ob-nueva-nota">Nueva entrada</button></div>
+        <div class="row-between"><h3>Bitácora (${bitacora.length})</h3><span class="actions tight">${bitacora.length ? '<button class="btn" id="ob-avance">Enviar avance al cliente</button>' : ''}<button class="btn primary" id="ob-nueva-nota">Nueva entrada</button></span></div>
         ${bitacora.length ? bitacora.map(b => {
           const fs = fotosDe(b.id);
           return `<article class="entrada" data-id="${b.id}">
@@ -219,6 +219,8 @@ async function pestanaObra(p) {
     await guardarMov(m); aviso('Entrada guardada.'); refrescar();
   };
   $('#ob-nueva-nota').addEventListener('click', () => editarNota());
+  const bAv = $('#ob-avance');
+  if (bAv) bAv.addEventListener('click', () => dialogoAvance(p, bitacora, fotosDe));
   $$('#ob-bitacora [data-acc]').forEach(b => b.addEventListener('click', async () => {
     const entrada = bitacora.find(x => x.id === b.dataset.id);
     if (b.dataset.acc === 'editar') return editarNota(entrada);
@@ -229,4 +231,71 @@ async function pestanaObra(p) {
     if (hechas.length) aviso(hechas.length === 1 ? 'Foto agregada a la entrada.' : `${hechas.length} fotos agregadas.`);
     refrescar();
   }));
+}
+
+/* ---------- Enviar avance al cliente: PDF o fotos sueltas ---------- */
+
+function dialogoAvance(p, bitacora, fotosDe) {
+  const dlg = document.createElement('dialog');
+  dlg.className = 'dlg-form';
+  const lista = bitacora.slice();                       /* más nueva primero */
+  const puedeCompartir = !!(navigator.canShare && navigator.share);
+  dlg.innerHTML = `<form method="dialog" novalidate>
+    <h2>Enviar avance al cliente</h2>
+    <p class="small muted">Elige las entradas que quieres mandar. Solo salen las fechas, las notas y las fotos: nunca pagos ni gastos.</p>
+    <ul class="checks" id="av-lista">${lista.map(b => { const n = fotosDe(b.id).length; return `<li><label class="check">
+      <input type="checkbox" value="${b.id}" checked><span><strong>${esc(fecha(b.fecha))}</strong> · ${esc((b.texto || '').split('\n')[0].slice(0, 60))}
+      <small class="muted"> (${n} foto${n === 1 ? '' : 's'})</small></span></label></li>`; }).join('')}</ul>
+    <label class="check"><input type="checkbox" id="av-medidas" checked><span>Dibujar las medidas sobre las fotos</span></label>
+    <p class="error-msg" id="av-error" role="alert" hidden></p>
+    <div class="dlg-actions">
+      <button value="cancel" class="btn">Cerrar</button>
+      ${puedeCompartir ? '<button type="button" class="btn" id="av-fotos">Compartir fotos</button>' : ''}
+      <button type="button" class="btn primary" id="av-pdf">Descargar PDF</button>
+    </div></form>`;
+  document.body.appendChild(dlg);
+  const error = t => { const e = dlg.querySelector('#av-error'); e.textContent = t || ''; e.hidden = !t; };
+  const elegidas = () => {
+    const ids = new Set(Array.from(dlg.querySelectorAll('#av-lista input:checked')).map(i => i.value));
+    return lista.filter(b => ids.has(b.id)).sort((a, b) => (a.fecha || '').localeCompare(b.fecha || '') || (a.creado || '').localeCompare(b.creado || ''));
+  };
+  const conMedidas = () => dlg.querySelector('#av-medidas').checked;
+  const ocupado = (btn, texto, f) => async () => {
+    error('');
+    const sel = elegidas();
+    if (!sel.length) { error('Marca al menos una entrada.'); return; }
+    const t0 = btn.textContent; btn.disabled = true; btn.textContent = texto;
+    try { await f(sel); } catch (e) { console.error(e); error('No se pudo: ' + e.message); }
+    btn.disabled = false; btn.textContent = t0;
+  };
+  const pdf = dlg.querySelector('#av-pdf');
+  pdf.addEventListener('click', ocupado(pdf, 'Preparando PDF…', async sel => {
+    const archivo = await generarPDFAvance(p, sel.map(b => ({ fecha: b.fecha, texto: b.texto, fotos: fotosDe(b.id) })), conMedidas());
+    descargarArchivo(archivo); aviso('Descargando ' + archivo.name + '. Búscalo en la carpeta Descargas.'); dlg.close();
+  }));
+  const fb = dlg.querySelector('#av-fotos');
+  if (fb) {
+    let listos = null;                                  /* fotos ya preparadas: el segundo toque comparte al instante */
+    fb.addEventListener('click', ocupado(fb, 'Preparando fotos…', async sel => {
+      const clave = sel.map(b => b.id).join(',') + '|' + conMedidas();
+      if (!listos || listos.clave !== clave) {
+        const archivos = []; let n = 0;
+        for (const b of sel) for (const f of fotosDe(b.id)) {
+          const blob = conMedidas() && f.anotaciones && f.anotaciones.length ? await renderizarFoto(f) : f.imagen;
+          archivos.push(new File([blob], `avance-${b.fecha}-${++n}.jpg`, { type: 'image/jpeg' }));
+        }
+        listos = { clave, archivos };
+      }
+      if (!listos.archivos.length) { error('Las entradas elegidas no tienen fotos.'); return; }
+      if (!navigator.canShare({ files: listos.archivos })) { error('Tu tablet no deja compartir tantas fotos juntas. Elige menos entradas o usa el PDF.'); return; }
+      try { await navigator.share({ files: listos.archivos, title: 'Avance de obra - ' + p.nombre, text: 'Avance de obra - ' + p.nombre }); dlg.close(); }
+      catch (e) {
+        if (e.name === 'AbortError') return;
+        if (e.name === 'NotAllowedError') { error('Las fotos ya están listas. Toca "Compartir fotos" otra vez.'); return; }
+        throw e;
+      }
+    }));
+  }
+  dlg.addEventListener('close', () => dlg.remove());
+  dlg.showModal();
 }

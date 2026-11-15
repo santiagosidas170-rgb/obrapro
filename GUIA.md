@@ -24,6 +24,7 @@ Cuando publiques una versión nueva, abre la app con internet una vez, ciérrala
    - **Pagos recibidos:** anota cada anticipo o estimación con su fecha, monto y forma de pago. La app te dice cuánto has cobrado y cuánto falta por cobrar del presupuesto.
    - **Gastos reales:** anota lo que realmente gastas (material, mano de obra, transporte, etc.). La app compara contra el costo directo presupuestado y calcula tu **utilidad a la fecha** (cobrado − gastado).
    - **Bitácora:** un diario de la obra con fecha y notas, y **fotos de avance** en cada entrada.
+   - **Enviar avance al cliente:** en la Bitácora toca **Enviar avance al cliente**, elige las entradas y descarga un **PDF de avance** con fechas, notas y fotos (con o sin las medidas dibujadas) o usa **Compartir fotos** para mandarlas por WhatsApp o correo. Nunca incluye pagos ni gastos.
    - Los gastos y la utilidad son solo para ti y **nunca salen en el reporte**. Si quieres, el reporte puede llevar un **Estado de pagos** para el cliente.
 9. **Reporte.** Elige qué espacios y qué contenido incluir, pide la firma del cliente en la pantalla y toca **Ver reporte → Descargar PDF**.
 
