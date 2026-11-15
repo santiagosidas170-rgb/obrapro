@@ -6,6 +6,7 @@
 /* ---------- Opciones del reporte de un proyecto ---------- */
 
 const OPCIONES_REPORTE = [
+  ['croquis', 'Croquis de referencia (acomódalo antes en la pestaña Croquis)'],
   ['fotos', 'Fotos de cada espacio'],
   ['medidas', 'Dibujar las medidas sobre las fotos'],
   ['fotosGenerales', 'Fotos que no son de un espacio'],
@@ -16,7 +17,7 @@ const OPCIONES_REPORTE = [
 ];
 
 function opcionesReporte(p) {
-  const r = p.reporte = Object.assign({ sel: null, fotos: true, medidas: true, fotosGenerales: true,
+  const r = p.reporte = Object.assign({ sel: null, fotos: true, medidas: true, fotosGenerales: true, croquis: false,
     conceptos: true, presupuesto: true, pagos: false, firmas: true }, p.reporte || {});
   return r;
 }
@@ -305,6 +306,11 @@ async function vistaReporte(id) {
   /* Resumen de espacios */
   let totSup = 0;
   const calc = espacios.map(s => { const r = calcularEspacio(s); if (r.superficie) totSup += redondear2(r.superficie); return r; });
+  let htmlCroquis = '';
+  if (o.croquis) {
+    const dc = datosCroquis(p, espacios);
+    if (dc.cajas.length) htmlCroquis = `<section class="rp-bloque"><h2>Croquis de referencia</h2><img class="rp-croquis" src="${croquisCanvas(dc, 1400, 1000).toDataURL('image/png')}" alt="Croquis de los espacios"><p class="rp-nota">${esc(LEYENDA_CROQUIS)}</p></section>`;
+  }
   const tablaEsp = espacios.length ? `
     <table class="rp-tabla">
       <thead><tr><th>Espacio</th><th>Medidas</th><th class="n">Superficie</th><th class="n">Perímetro</th><th class="n">Muros</th><th>Estado</th></tr></thead>
@@ -411,6 +417,7 @@ async function vistaReporte(id) {
       ${p.observaciones ? `<h4>Observaciones generales</h4><p>${parrafos(p.observaciones)}</p>` : ''}
     </section>
     ${espacios.length ? `<section class="rp-bloque"><h2>Espacios</h2>${tablaEsp}</section>` : ''}
+    ${htmlCroquis}
     ${detalle ? `<section class="rp-bloque"><h2>Detalle por espacio</h2>${detalle}</section>` : ''}
     ${bloqueConceptos}${bloquePres}${bloquePagos}
     <p class="small rp-aviso">${esc(AVISO_MEDIDAS)} La superficie de muros es bruta: no descuenta puertas ni ventanas.</p>

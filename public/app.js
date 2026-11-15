@@ -3,7 +3,7 @@
    guardado local y copia de seguridad. */
 'use strict';
 
-const VERSION_APP = '1.4.0 (Etapa 12: catálogo ampliado)';
+const VERSION_APP = '1.5.0 (Etapa 13: croquis de referencia)';
 
 /* Íconos dibujados (la tipografía Lato no incluye ✓ ni ✕) */
 const ICONO_CHECK = '<svg class="ico-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>';
@@ -389,6 +389,7 @@ async function vistaNuevoProyecto() {
 const PESTANAS = [
   ['datos', 'Datos', true],
   ['espacios', 'Espacios', true],
+  ['croquis', 'Croquis', true],
   ['fotos', 'Fotos', true],
   ['conceptos', 'Conceptos', true],
   ['presupuesto', 'Presupuesto', true],
@@ -424,6 +425,7 @@ async function vistaProyecto(id, pestana) {
   { const act = $('.tabs .tab.active'), barra = $('.tabs'); if (act && barra && barra.scrollWidth > barra.clientWidth) barra.scrollLeft = Math.max(0, act.offsetLeft - (barra.clientWidth - act.offsetWidth) / 2); }   /* con muchas pestañas, deja visible la activa */
 
   if (pestana === 'espacios') await pestanaEspacios(p);
+  else if (pestana === 'croquis') await pestanaCroquis(p);
   else if (pestana === 'fotos') await pestanaFotos(p);
   else if (pestana === 'conceptos') await pestanaConceptos(p);
   else if (pestana === 'presupuesto') await pestanaPresupuesto(p);
