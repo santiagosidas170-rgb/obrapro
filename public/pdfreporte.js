@@ -211,6 +211,7 @@ async function dibujarReporte(p, avanzar) {
         calc[i].perimetro != null ? num(calc[i].perimetro) + ' m' : '—', calc[i].muros != null ? num(calc[i].muros) + ' m²' : '—', etiqueta(ESTADOS_ESPACIO, s.estadoActual)]),
       { pie: ['Superficie total', '', num(totSup) + ' m²', '', '', ''] });
   }
+  if (o.croquis) { const dc = datosCroquis(p, espacios); if (dc.cajas.length) croquisEnPDF(H, dc); }
   await avanzar(0.2);
 
   /* Fotos (con las medidas dibujadas) en dos columnas */
@@ -427,5 +428,36 @@ async function generarPDFAvance(p, entradas, conMedidas) {
   });
   const blob = await armarPDF(H.paginas, `Reporte de avance - ${p.nombre}`);
   const nombre = `Reporte de avance - ${p.nombre} - ${hoy()}`.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim() + '.pdf';
+  return new File([blob], nombre, { type: 'application/pdf' });
+}
+
+/* ---------- Croquis de referencia ---------- */
+
+/* Dibuja el croquis dentro de la hoja actual (con su título y leyenda). */
+function croquisEnPDF(H, d) {
+  if (!d.cajas.length) return;
+  const cv = croquisCanvas(d, H.ancho, 880);
+  H.cabe(cv.height + 150);                          /* título, croquis y leyenda juntos */
+  H.h2('Croquis de referencia');
+  H.ctx.drawImage(cv, PDF_M, H.y); H.y += cv.height + 8;
+  H.ctx.strokeStyle = T.linea; H.ctx.lineWidth = 2; H.ctx.strokeRect(PDF_M, H.y - cv.height - 8, H.ancho, cv.height);
+  H.parrafo(LEYENDA_CROQUIS, { px: 19, color: T.gris });
+  if (d.sinMedidas.length) H.parrafo('Sin medidas, no aparecen: ' + d.sinMedidas.join(', ') + '.', { px: 19, color: T.gris });
+}
+
+async function generarPDFCroquis(p, d) {
+  const c = datosContratista();
+  if (document.fonts && document.fonts.load) { try { await Promise.all([document.fonts.load('400 20px Lato'), document.fonts.load('700 20px Lato')]); } catch (e) { /* respaldo */ } }
+  const H = new HojaPDF();
+  await dibujarEncabezado(H, c, 'Croquis de referencia', fecha(hoy()));
+  H.h2('Proyecto');
+  H.filaDato('Proyecto', p.nombre); H.filaDato('Cliente', p.cliente); H.filaDato('Dirección', p.direccion);
+  croquisEnPDF(H, d);
+  H.paginas.forEach((cv, i) => {
+    const x = cv.getContext('2d'); x.font = '400 18px Lato, Arial, sans-serif'; x.fillStyle = '#8a8176';
+    const t = `${p.nombre} · Página ${i + 1} de ${H.paginas.length}`; x.fillText(t, (PDF_W - x.measureText(t).width) / 2, PDF_H - 50);
+  });
+  const blob = await armarPDF(H.paginas, `Croquis - ${p.nombre}`);
+  const nombre = `Croquis - ${p.nombre} - ${hoy()}`.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim() + '.pdf';
   return new File([blob], nombre, { type: 'application/pdf' });
 }

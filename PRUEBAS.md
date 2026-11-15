@@ -14,12 +14,13 @@ Se corren con `bash pruebas/ejecutar.sh` (necesita Node.js, Playwright con Chrom
 | `presupuesto-test.js` | 90 | Catálogo, conceptos, cantidades medida/estimada/confirmada, presupuesto, IVA con confirmación, caso de referencia $10,792.73. |
 | `seguimiento-test.js` | 48 | Actualización de la base vieja sin perder datos, pagos, gastos, bitácora con fotos, resumen financiero, estado de pagos en el reporte (sin gastos), copia y borrado en cascada. |
 | `avance-test.js` | 13 | Enviar avance al cliente: selección de entradas, PDF de avance (con y sin medidas), compartir fotos como archivos, entradas sin fotos, sin pagos ni gastos. |
+| `croquis-test.js` | 35 | Croquis: geometría (cm→m, irregular, imán, acomodo sin encimar), arrastre y teclado, puertas y ventanas con validación, girar, PDF e imagen, opción en el reporte, celular y tablet. |
 | `listas-test.js` | 32 | Listas de materiales y mano de obra: cantidades con desperdicio, piezas redondeadas, totales, agrupación, copiar texto, PDF (1 y varias páginas), celular y tablet. |
 | `reporte-test.js` | 56 | Datos y firmas, selección de espacios, contenido del reporte, PDF propio y por impresión, tablet y celular. |
 | `backup-test.js` | 24 | Copia con 40 fotos (7 MB): ida y vuelta idéntica byte a byte, archivos dañados, copia vieja, registros inválidos. |
 | `tabla-ancho.js` | 12 | La tabla de conceptos cabe completa en cada tamaño de pantalla. |
 
-**Total: 539 comprobaciones, todas correctas** en la última corrida.
+**Total: 574 comprobaciones, todas correctas** en la última corrida.
 
 ### Problemas que las pruebas encontraron y se corrigieron
 

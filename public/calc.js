@@ -212,8 +212,58 @@ function resumenObra({ total = null, costoDirecto = 0, pagos = [], gastos = [] }
 }
 
 
+
+/* ---------- Croquis: geometría pura (en metros) ---------- */
+
+/* Caja que ocupa un espacio en el croquis. Irregular: aproximada con la misma superficie. */
+function cajaEspacio(e) {
+  const u = e.unidad || 'm';
+  if (e.forma === 'irregular') {
+    const r = calcularEspacio(e);
+    const mas = (e.tramos || []).filter(t => t.largo > 0 && t.ancho > 0 && t.signo !== -1);
+    if (!(r.superficie > 0) || !mas.length) return null;
+    const w = Math.max(...mas.map(t => aMetros(t.largo, u)));
+    return { w, h: r.superficie / w, aprox: true };
+  }
+  const w = aMetros(e.largo, u), h = aMetros(e.ancho, u);
+  return w > 0 && h > 0 ? { w, h, aprox: false } : null;
+}
+
+/* Acomoda cajas en filas (de izquierda a derecha) para el primer croquis. items: [{id,w,h}] */
+function distribuirCroquis(items, anchoMax, origenY) {
+  const sep = 0.4, pos = {};
+  let x = 0, y = origenY || 0, altoFila = 0;
+  for (const it of items) {
+    if (x > 0 && x + it.w > anchoMax) { x = 0; y += altoFila + sep; altoFila = 0; }
+    pos[it.id] = { x: Math.round(x * 100) / 100, y: Math.round(y * 100) / 100 };
+    x += it.w + sep; altoFila = Math.max(altoFila, it.h);
+  }
+  return pos;
+}
+
+/* Pega una caja a las orillas de las demás (y a la cuadrícula de 5 cm) si queda a menos de tol metros. */
+function imanCroquis(m, otros, tol) {
+  const mejor = (cands, actual) => {
+    let d = null;
+    for (const c of cands) if (Math.abs(c) <= tol && (d === null || Math.abs(c) < Math.abs(d))) d = c;
+    return d === null ? Math.round(actual * 20) / 20 : actual + d;
+  };
+  const cx = [], cy = [];
+  for (const o of otros) {
+    cx.push(o.x + o.w - m.x, o.x - (m.x + m.w), o.x - m.x, o.x + o.w - (m.x + m.w));
+    cy.push(o.y + o.h - m.y, o.y - (m.y + m.h), o.y - m.y, o.y + o.h - (m.y + m.h));
+  }
+  return { x: Math.round(mejor(cx, m.x) * 100) / 100, y: Math.round(mejor(cy, m.y) * 100) / 100 };
+}
+
+function limitesCroquis(cajas) {
+  if (!cajas.length) return { minx: 0, miny: 0, maxx: 1, maxy: 1 };
+  return { minx: Math.min(...cajas.map(c => c.x)), miny: Math.min(...cajas.map(c => c.y)),
+    maxx: Math.max(...cajas.map(c => c.x + c.w)), maxy: Math.max(...cajas.map(c => c.y + c.h)) };
+}
+
 if (typeof module !== 'undefined') {
   module.exports = { listasObra, resumenObra, UNIDADES, redondear2, aMetros, leerNumero, validarMedida, calcularEspacio,
-    superficieTramo, centavos, calcularPartida, calcularPresupuesto, formatoMXN,
+    superficieTramo, cajaEspacio, distribuirCroquis, imanCroquis, limitesCroquis, centavos, calcularPartida, calcularPresupuesto, formatoMXN,
     leerDinero, leerPorcentaje, leerCantidad, dineroTxt, formatoPesos };
 }
