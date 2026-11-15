@@ -4,9 +4,9 @@
    ObraPro no trae precios. Usa funciones de app.js, db.js y calc.js. */
 'use strict';
 
-const UNIDADES_CONCEPTO = [['m2', 'm²'], ['m', 'm'], ['m3', 'm³'], ['pza', 'pieza'], ['lote', 'lote'], ['servicio', 'servicio']];
-const CATEGORIAS_CONCEPTO = ['Demolición', 'Albañilería', 'Aplanados', 'Pintura', 'Pisos y azulejos', 'Instalaciones eléctricas',
-  'Instalaciones hidráulicas y sanitarias', 'Plafones', 'Carpintería', 'Herrería', 'Impermeabilización', 'Limpieza', 'Otros'];
+const UNIDADES_CONCEPTO = [['m2', 'm²'], ['m', 'm'], ['m3', 'm³'], ['pza', 'pieza'], ['lote', 'lote'], ['servicio', 'servicio'], ['salida', 'salida'], ['jornal', 'jornal'], ['kg', 'kg']];
+const CATEGORIAS_CONCEPTO = ['Demolición', 'Cimentación y estructura', 'Albañilería', 'Aplanados', 'Pintura', 'Pisos y azulejos', 'Instalaciones eléctricas',
+  'Instalaciones hidráulicas y sanitarias', 'Plafones', 'Carpintería', 'Herrería', 'Cancelería y vidrio', 'Impermeabilización', 'Limpieza', 'Otros'];
 const TIPOS_CANTIDAD = [['medida', 'Medida'], ['estimada', 'Estimada'], ['confirmada', 'Confirmada']];
 const AYUDA_TIPO = {
   medida: 'Tomada de las medidas que capturaste en un espacio.',
@@ -17,18 +17,83 @@ const ORIGENES = { piso: ['Piso', 'm2'], muros: ['Muros', 'm2'], perimetro: ['Pe
 
 /* Conceptos de arranque: solo nombres, categorías y unidades. SIN precios. */
 const CONCEPTOS_BASICOS = [
+  /* Demolición */
   ['Demolición de muro', 'Demolición', 'm2'], ['Demolición de piso', 'Demolición', 'm2'], ['Retiro de escombro', 'Demolición', 'm3'],
-  ['Muro de block', 'Albañilería', 'm2'], ['Cadena o castillo', 'Albañilería', 'm'], ['Resane y reparación de grietas', 'Albañilería', 'm'],
-  ['Aplanado de mortero en muros', 'Aplanados', 'm2'], ['Aplanado fino en muros y plafones', 'Aplanados', 'm2'],
+  ['Demolición de plafón', 'Demolición', 'm2'], ['Retiro de azulejo en muros', 'Demolición', 'm2'], ['Retiro de puertas y ventanas', 'Demolición', 'pza'],
+  ['Retiro de muebles de baño', 'Demolición', 'pza'], ['Picado de aplanado', 'Demolición', 'm2'], ['Apertura de ranuras en muro', 'Demolición', 'm'],
+  /* Cimentación y estructura */
+  ['Excavación a mano', 'Cimentación y estructura', 'm3'], ['Zapata corrida', 'Cimentación y estructura', 'm'], ['Firme de concreto', 'Cimentación y estructura', 'm2'],
+  ['Losa de concreto armado', 'Cimentación y estructura', 'm2'], ['Trabe o dala de concreto', 'Cimentación y estructura', 'm'], ['Columna de concreto', 'Cimentación y estructura', 'm'],
+  ['Relleno compactado', 'Cimentación y estructura', 'm3'],
+  /* Albañilería */
+  ['Muro de block', 'Albañilería', 'm2'], ['Muro de tabique', 'Albañilería', 'm2'], ['Cadena o castillo', 'Albañilería', 'm'], ['Resane y reparación de grietas', 'Albañilería', 'm'],
+  ['Cerramiento sobre puerta o ventana', 'Albañilería', 'pza'], ['Pretil', 'Albañilería', 'm'], ['Escalón o escalera de concreto', 'Albañilería', 'pza'],
+  ['Registro de albañilería', 'Albañilería', 'pza'], ['Banqueta o rampa de concreto', 'Albañilería', 'm2'], ['Ayuda de albañilería a instalaciones', 'Albañilería', 'lote'],
+  ['Mano de obra por jornal de ayudante', 'Albañilería', 'jornal'], ['Mano de obra por jornal de oficial', 'Albañilería', 'jornal'],
+  /* Aplanados */
+  ['Aplanado de mortero en muros', 'Aplanados', 'm2'], ['Aplanado fino en muros y plafones', 'Aplanados', 'm2'], ['Repellado en muros', 'Aplanados', 'm2'],
+  ['Emboquillado de puertas y ventanas', 'Aplanados', 'm'], ['Plantilla o nivelación de piso (mortero)', 'Aplanados', 'm2'], ['Pasta texturizada', 'Aplanados', 'm2'],
+  /* Pintura */
   ['Pintura vinílica en muros y plafones', 'Pintura', 'm2'], ['Sellador', 'Pintura', 'm2'], ['Pintura de esmalte en herrería', 'Pintura', 'm2'],
+  ['Pintura exterior (fachada)', 'Pintura', 'm2'], ['Pintura en techos altos', 'Pintura', 'm2'], ['Barniz en madera', 'Pintura', 'm2'],
+  ['Pintura de esmalte en puertas', 'Pintura', 'pza'], ['Retiro de pintura vieja', 'Pintura', 'm2'], ['Empastado y lijado', 'Pintura', 'm2'],
+  /* Pisos y azulejos */
   ['Piso cerámico o porcelanato', 'Pisos y azulejos', 'm2'], ['Azulejo en muros', 'Pisos y azulejos', 'm2'], ['Zoclo o rodapié', 'Pisos y azulejos', 'm'],
+  ['Piso laminado', 'Pisos y azulejos', 'm2'], ['Piso vinílico', 'Pisos y azulejos', 'm2'], ['Loseta o piso de cantera', 'Pisos y azulejos', 'm2'],
+  ['Piso de concreto pulido', 'Pisos y azulejos', 'm2'], ['Boquilla o junteo', 'Pisos y azulejos', 'm2'], ['Remate o cenefa decorativa', 'Pisos y azulejos', 'm'],
+  ['Escalón recubierto', 'Pisos y azulejos', 'm'], ['Mosaico o azulejo decorativo en regadera', 'Pisos y azulejos', 'm2'],
+  /* Instalaciones eléctricas */
   ['Salida de contacto o apagador', 'Instalaciones eléctricas', 'pza'], ['Salida de luminaria', 'Instalaciones eléctricas', 'pza'], ['Cableado y canalización', 'Instalaciones eléctricas', 'lote'],
+  ['Salida de contacto sencillo', 'Instalaciones eléctricas', 'salida'], ['Salida de contacto doble', 'Instalaciones eléctricas', 'salida'],
+  ['Salida de contacto con tierra aislada', 'Instalaciones eléctricas', 'salida'], ['Salida de contacto GFCI (baño o cocina)', 'Instalaciones eléctricas', 'salida'],
+  ['Salida de apagador sencillo', 'Instalaciones eléctricas', 'salida'], ['Salida de apagador de escalera', 'Instalaciones eléctricas', 'salida'],
+  ['Salida de luminaria en plafón', 'Instalaciones eléctricas', 'salida'], ['Salida de luminaria en muro', 'Instalaciones eléctricas', 'salida'],
+  ['Salida de ventilador de techo', 'Instalaciones eléctricas', 'salida'], ['Salida para aire acondicionado', 'Instalaciones eléctricas', 'salida'],
+  ['Salida para estufa o parrilla eléctrica', 'Instalaciones eléctricas', 'salida'], ['Salida para calentador eléctrico', 'Instalaciones eléctricas', 'salida'],
+  ['Salida de timbre', 'Instalaciones eléctricas', 'salida'], ['Salida de TV o datos (red)', 'Instalaciones eléctricas', 'salida'], ['Salida de teléfono', 'Instalaciones eléctricas', 'salida'],
+  ['Salida de interfón', 'Instalaciones eléctricas', 'salida'], ['Centro de carga (tablero)', 'Instalaciones eléctricas', 'pza'], ['Interruptor termomagnético', 'Instalaciones eléctricas', 'pza'],
+  ['Acometida eléctrica', 'Instalaciones eléctricas', 'lote'], ['Medidor y base de medición', 'Instalaciones eléctricas', 'pza'], ['Sistema de tierra física', 'Instalaciones eléctricas', 'lote'],
+  ['Cable calibre 12 (suministro e instalación)', 'Instalaciones eléctricas', 'm'], ['Cable calibre 10 (suministro e instalación)', 'Instalaciones eléctricas', 'm'],
+  ['Tubería conduit en muro o losa', 'Instalaciones eléctricas', 'm'], ['Canalización exterior (tubo o canaleta)', 'Instalaciones eléctricas', 'm'],
+  ['Cambio de contactos y apagadores (solo mecanismos)', 'Instalaciones eléctricas', 'pza'], ['Cambio de luminarias', 'Instalaciones eléctricas', 'pza'],
+  ['Mano de obra de electricista por jornal', 'Instalaciones eléctricas', 'jornal'],
+  /* Instalaciones hidráulicas y sanitarias */
   ['Salida hidráulica', 'Instalaciones hidráulicas y sanitarias', 'pza'], ['Salida sanitaria o drenaje', 'Instalaciones hidráulicas y sanitarias', 'pza'],
   ['Mueble de baño (suministro e instalación)', 'Instalaciones hidráulicas y sanitarias', 'pza'],
-  ['Plafón de tablaroca', 'Plafones', 'm2'], ['Plafón de PVC', 'Plafones', 'm2'],
-  ['Puerta de madera', 'Carpintería', 'pza'], ['Closet o mueble de cocina', 'Carpintería', 'lote'],
-  ['Ventana de herrería o aluminio', 'Herrería', 'pza'], ['Reja o barandal', 'Herrería', 'm'],
-  ['Impermeabilización de azotea', 'Impermeabilización', 'm2'], ['Limpieza final de obra', 'Limpieza', 'servicio']
+  ['Tubería de agua fría (CPVC o cobre)', 'Instalaciones hidráulicas y sanitarias', 'm'], ['Tubería de agua caliente', 'Instalaciones hidráulicas y sanitarias', 'm'],
+  ['Tubería de drenaje PVC', 'Instalaciones hidráulicas y sanitarias', 'm'], ['Instalación de WC', 'Instalaciones hidráulicas y sanitarias', 'pza'],
+  ['Instalación de lavabo', 'Instalaciones hidráulicas y sanitarias', 'pza'], ['Instalación de regadera y mezcladora', 'Instalaciones hidráulicas y sanitarias', 'pza'],
+  ['Instalación de fregadero', 'Instalaciones hidráulicas y sanitarias', 'pza'], ['Instalación de calentador de gas', 'Instalaciones hidráulicas y sanitarias', 'pza'],
+  ['Instalación de calentador solar', 'Instalaciones hidráulicas y sanitarias', 'pza'], ['Tinaco', 'Instalaciones hidráulicas y sanitarias', 'pza'],
+  ['Cisterna', 'Instalaciones hidráulicas y sanitarias', 'pza'], ['Bomba de agua', 'Instalaciones hidráulicas y sanitarias', 'pza'],
+  ['Registro sanitario', 'Instalaciones hidráulicas y sanitarias', 'pza'], ['Coladera o desagüe de piso', 'Instalaciones hidráulicas y sanitarias', 'pza'],
+  ['Llave de paso o llave de jardín', 'Instalaciones hidráulicas y sanitarias', 'pza'], ['Instalación de gas (tubería)', 'Instalaciones hidráulicas y sanitarias', 'm'],
+  ['Prueba de hermeticidad', 'Instalaciones hidráulicas y sanitarias', 'servicio'],
+  /* Plafones */
+  ['Plafón de tablaroca', 'Plafones', 'm2'], ['Plafón de PVC', 'Plafones', 'm2'], ['Plafón reticular', 'Plafones', 'm2'],
+  ['Moldura o cornisa', 'Plafones', 'm'], ['Cejas o tragaluz de tablaroca', 'Plafones', 'm'], ['Muro divisorio de tablaroca', 'Plafones', 'm2'],
+  /* Carpintería */
+  ['Puerta de madera', 'Carpintería', 'pza'], ['Closet o mueble de cocina', 'Carpintería', 'lote'], ['Cocina integral', 'Carpintería', 'm'],
+  ['Closet por metro lineal', 'Carpintería', 'm'], ['Puerta de tambor', 'Carpintería', 'pza'], ['Marco de puerta', 'Carpintería', 'pza'],
+  ['Cerradura o chapa', 'Carpintería', 'pza'], ['Bisagras y herrajes', 'Carpintería', 'lote'], ['Barra de cocina o desayunador', 'Carpintería', 'pza'],
+  ['Cubierta de cocina (granito o cuarzo)', 'Carpintería', 'm'], ['Zoclo de madera', 'Carpintería', 'm'], ['Repisas', 'Carpintería', 'pza'],
+  /* Herrería */
+  ['Ventana de herrería o aluminio', 'Herrería', 'pza'], ['Reja o barandal', 'Herrería', 'm'], ['Puerta de herrería', 'Herrería', 'pza'],
+  ['Portón', 'Herrería', 'pza'], ['Protección de ventana', 'Herrería', 'pza'], ['Escalera metálica', 'Herrería', 'pza'], ['Barandal de escalera', 'Herrería', 'm'],
+  ['Estructura metálica ligera', 'Herrería', 'kg'], ['Soldadura y reparación de herrería', 'Herrería', 'servicio'],
+  /* Cancelería y vidrio */
+  ['Cancel de baño', 'Cancelería y vidrio', 'pza'], ['Ventana de aluminio', 'Cancelería y vidrio', 'm2'], ['Puerta de aluminio con vidrio', 'Cancelería y vidrio', 'pza'],
+  ['Vidrio fijo o espejo', 'Cancelería y vidrio', 'm2'], ['Mosquitero', 'Cancelería y vidrio', 'm2'], ['Domo o tragaluz', 'Cancelería y vidrio', 'pza'],
+  /* Impermeabilización */
+  ['Impermeabilización de azotea', 'Impermeabilización', 'm2'], ['Impermeabilización de baño o regadera', 'Impermeabilización', 'm2'],
+  ['Sellado de grietas y juntas', 'Impermeabilización', 'm'], ['Impermeabilización de cisterna', 'Impermeabilización', 'm2'],
+  ['Entortado con pendiente en azotea', 'Impermeabilización', 'm2'], ['Chaflán en azotea', 'Impermeabilización', 'm'],
+  /* Limpieza */
+  ['Limpieza final de obra', 'Limpieza', 'servicio'], ['Limpieza gruesa de obra', 'Limpieza', 'servicio'], ['Acarreo de materiales', 'Limpieza', 'lote'],
+  ['Flete de escombro (viaje)', 'Limpieza', 'servicio'], ['Lavado de fachada', 'Limpieza', 'm2'],
+  /* Otros */
+  ['Supervisión de obra', 'Otros', 'servicio'], ['Trámites y permisos', 'Otros', 'servicio'], ['Renta de andamio', 'Otros', 'lote'],
+  ['Renta de herramienta o equipo', 'Otros', 'lote'], ['Imprevistos', 'Otros', 'lote']
 ];
 
 const unidadTxt = u => (UNIDADES_CONCEPTO.find(x => x[0] === u) || [0, u || ''])[1];

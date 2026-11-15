@@ -46,21 +46,21 @@ const SKIP = () => { try { sessionStorage.setItem('obrapro-splash', '1'); } catc
   check('B. Catálogo vacío explica que los precios los captura el usuario', await page.isVisible('text=Tu catálogo está vacío.') && (await txt('main')).includes('ObraPro no trae precios'));
   await page.click('#basicos'); await page.waitForSelector('.cat-fila'); await wait(300);
   const basicos = await bd('catalogo');
-  check('B. Se agregan los 28 conceptos básicos', basicos.length === 28, String(basicos.length));
+  check('B. Se agregan los 154 conceptos básicos', basicos.length === 154, String(basicos.length));
   check('B. Ningún concepto básico trae precios inventados', basicos.every(c => c.precioMaterial === null && c.precioManoObra === null));
-  check('B. Todos aparecen como "Sin precio"', (await page.locator('.cat-fila .tag.aviso:has-text("Sin precio")').count()) === 28);
-  check('B. Se agrupan por categoría (12 categorías)', (await page.locator('.cat-titulo').count()) === 12);
+  check('B. Todos aparecen como "Sin precio"', (await page.locator('.cat-fila .tag.aviso:has-text("Sin precio")').count()) === 154);
+  check('B. Se agrupan por categoría (15 categorías)', (await page.locator('.cat-titulo').count()) === 15);
   await page.click('#basicos'); await wait(300);
-  check('B. Agregarlos de nuevo no duplica', (await bd('catalogo')).length === 28 && await page.isVisible('#toast:has-text("Ya tienes todos")'));
+  check('B. Agregarlos de nuevo no duplica', (await bd('catalogo')).length === 154 && await page.isVisible('#toast:has-text("Ya tienes todos")'));
   await page.fill('#q', 'pintura'); check('B. Búsqueda sin acentos ("pintura")', (await page.locator('.cat-fila').count()) >= 3);
   await page.fill('#q', 'zzzz'); check('B. Búsqueda sin resultados', await page.isVisible('text=Ningún concepto coincide'));
-  await page.fill('#q', ''); await page.selectOption('#f-cat', 'Plafones'); check('B. Filtro por categoría', (await page.locator('.cat-fila').count()) === 2);
+  await page.fill('#q', ''); await page.selectOption('#f-cat', 'Plafones'); check('B. Filtro por categoría', (await page.locator('.cat-fila').count()) === 6);
   await page.selectOption('#f-cat', ''); await page.screenshot({ path: SH + '1-catalogo.png' });
 
   // concepto nuevo: no se guarda sin nombre
   await page.click('text=+ Nuevo concepto'); await page.waitForSelector('#f-descripcion');
   await llenar('#f-precioMaterial', '50'); await guardado();
-  check('B. Un concepto sin nombre no se guarda', (await bd('catalogo')).length === 28 && (await txt('#save-status')).includes('Escribe el nombre'));
+  check('B. Un concepto sin nombre no se guarda', (await bd('catalogo')).length === 154 && (await txt('#save-status')).includes('Escribe el nombre'));
   await page.fill('#f-descripcion', 'Pintura premium'); await page.selectOption('#f-categoria', 'Pintura'); await page.selectOption('#f-unidad', 'm2');
   await llenar('#f-precioMaterial', 'abc'); check('B. Precio con letras: error claro', await page.isVisible('text=Escribe solo números'));
   await llenar('#f-precioMaterial', '-5'); check('B. Precio negativo: error claro', await page.isVisible('text=El precio no puede ser negativo.'));
@@ -74,7 +74,7 @@ const SKIP = () => { try { sessionStorage.setItem('obrapro-splash', '1'); } catc
   await page.click('#eliminar'); await page.waitForSelector('#dlg[open]');
   check('B. Eliminar pide confirmación y aclara que los proyectos no cambian', (await txt('#dlg-msg')).includes('no cambian'));
   await page.click('#dlg-ok'); await page.waitForURL(/#\/catalogo/); await wait(300);
-  check('B. Concepto eliminado del catálogo', (await bd('catalogo')).length === 28);
+  check('B. Concepto eliminado del catálogo', (await bd('catalogo')).length === 154);
 
   // captura de precios de los conceptos que se usarán (caso de la Etapa 3)
   const editarConcepto = async (nombre, mat, mo, desp) => {
@@ -89,7 +89,7 @@ const SKIP = () => { try { sessionStorage.setItem('obrapro-splash', '1'); } catc
   // ---------- D. Conceptos del proyecto: el caso de la Etapa 3 ----------
   await hashA('#/proyecto/' + ids.p + '/conceptos'); await page.waitForSelector('#agregar-concepto'); await page.click('#agregar-concepto');
   await page.waitForSelector('#dlg-catalogo[open]');
-  check('D. El selector muestra el catálogo y la opción de concepto en blanco', await page.isVisible('.cat-blanco') && (await page.locator('.cat-item').count()) === 29);
+  check('D. El selector muestra el catálogo y la opción de concepto en blanco', await page.isVisible('.cat-blanco') && (await page.locator('.cat-item').count()) === 155);
   await page.fill('#cat-buscar', 'pintura vin'); check('D. El selector filtra al escribir', (await page.locator('.cat-item:not(.cat-blanco)').count()) === 1);
   await page.click('.cat-item:has-text("Pintura vinílica")'); await page.waitForURL(/#\/partida\//); await page.waitForSelector('#f-cantidad');
   check('D. Los precios del catálogo se copian al concepto (20.00 y 30.00)', (await page.inputValue('#f-precioMaterial')) === '20.00' && (await page.inputValue('#f-precioManoObra')) === '30.00');
@@ -207,11 +207,11 @@ const SKIP = () => { try { sessionStorage.setItem('obrapro-splash', '1'); } catc
   const [dl] = await Promise.all([page.waitForEvent('download'), page.click('#exportar')]);
   const ruta = SALIDA + '/' + dl.suggestedFilename(); await dl.saveAs(ruta);
   const resp = JSON.parse(fs.readFileSync(ruta, 'utf8'));
-  check('J. La copia incluye catálogo, conceptos y el presupuesto del proyecto', resp.datos.catalogo.length >= 28 && resp.datos.partidas.length === 3 && resp.datos.proyectos[0].presupuesto.indirectos === 10 && resp.datos.proyectos[0].presupuesto.condiciones.startsWith('50 %'));
+  check('J. La copia incluye catálogo, conceptos y el presupuesto del proyecto', resp.datos.catalogo.length >= 154 && resp.datos.partidas.length === 3 && resp.datos.proyectos[0].presupuesto.indirectos === 10 && resp.datos.proyectos[0].presupuesto.condiciones.startsWith('50 %'));
   await page.evaluate(async ([pid]) => { await dbBorrarProyecto(pid); for (const c of await dbTodos('catalogo')) await dbBorrar('catalogo', c.id); }, [ids.p]);
   check('J. Borrar el proyecto borra también sus conceptos', (await bd('partidas')).length === 0);
   await page.setInputFiles('#importar', ruta); await page.waitForSelector('#dlg[open]'); await page.click('#dlg-ok'); await page.waitForURL(/#\/proyectos/); await wait(500);
-  check('J. Restaurar devuelve catálogo y conceptos', (await bd('catalogo')).length >= 28 && (await bd('partidas')).length === 3);
+  check('J. Restaurar devuelve catálogo y conceptos', (await bd('catalogo')).length >= 154 && (await bd('partidas')).length === 3);
   await hashA('#/proyecto/' + ids.p + '/presupuesto'); await page.waitForSelector('#t-total'); await wait(300);
   check('J. El presupuesto restaurado da el mismo total (' + totalAntes + ')', (await txt('#t-total')) === totalAntes, await txt('#t-total'));
 

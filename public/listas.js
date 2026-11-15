@@ -14,7 +14,7 @@ function prepararLista(tipo, L, grupo, nombreEsp) {
   for (const f of lista) {
     const u = unidadTxt(f.unidad);
     const costo = mat ? f.costoMaterial : f.costoManoObra;
-    const comprar = (f.unidad === 'pza' ? Math.ceil(f.comprar - 1e-9) : f.comprar);
+    const comprar = ((f.unidad === 'pza' || f.unidad === 'salida') ? Math.ceil(f.comprar - 1e-9) : f.comprar);
     const e = nombreEsp[f.espacioId];
     const linea = {
       f, costo,

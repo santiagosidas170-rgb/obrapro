@@ -3,7 +3,7 @@
 Aplicación web progresiva (PWA) para levantamientos de obra y remodelación.
 Funciona sin internet y guarda los datos solo en el dispositivo.
 
-**Versión:** 1.3.0 (Etapa 11: reporte de avance al cliente)
+**Versión:** 1.4.0 (Etapa 12: catálogo ampliado)
 
 **Documentación:** [GUIA.md](GUIA.md) (cómo usar la app y hacer copias de seguridad) · [PRUEBAS.md](PRUEBAS.md) (qué se probó, qué falta probar en la tablet)
 
