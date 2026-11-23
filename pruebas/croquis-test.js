@@ -61,8 +61,9 @@ const SKIP = () => { try { sessionStorage.setItem('obrapro-splash', '1'); } catc
   /* geometría de pantalla para tocar */
   const centro = async nombre => page.evaluate(async ([i, nom]) => {
     const p = await dbObtener('proyectos', i), es = (await dbPorProyecto('espacios', i)).find(e => e.nombre === nom);
-    const c = document.querySelector('#cq-canvas'), r = c.getBoundingClientRect();
-    const d = datosCroquis(p, await dbPorProyecto('espacios', i)), v = vistaCroquis(d.cajas, r.width, r.height, 28);
+    const c = document.querySelector('#cq-canvas'); c.scrollIntoView({ block: 'center', behavior: 'instant' }); const r = c.getBoundingClientRect();
+    const v = c.vistaActual();
+    const d = datosCroquis(p, await dbPorProyecto('espacios', i));
     const b = d.cajas.find(x => x.id === es.id);
     return { x: r.left + pxX(v, b.x + b.w / 2), y: r.top + pxY(v, b.y + b.h / 2), k: v.k, b };
   }, [id, nombre]);

@@ -75,3 +75,12 @@ Tus datos **solo existen en la tablet**. Si borras los datos del navegador, desi
 ## 6. Privacidad
 
 ObraPro no envía datos a ningún servidor. Cualquier persona con la tablet desbloqueada puede ver tus proyectos: usa bloqueo de pantalla.
+
+## Croquis: elementos y acomodo (Etapa 14)
+
+En la pestaña **Croquis** toca **＋ Agregar** para poner cosas sobre el plano: muebles (cama, clóset, sofá, mesa…), cocina (estufa, refri, fregadero), baño (WC, lavabo, regadera, tina), escalera, columna, instalaciones (contacto, apagador, luminaria, clima, tablero) y **notas** de texto.
+
+- Toca un elemento para seleccionarlo: puedes **girarlo, cambiar su tamaño, duplicarlo o borrarlo**.
+- Arrastra espacios y elementos para acomodarlos (se pegan a una cuadrícula de 5 cm). Flechas del teclado mueven 5 cm.
+- Arrastra el fondo para **desplazar** el plano; **＋ / －** o dos dedos para acercar/alejar; **Ver todo** para encuadrar.
+- Todo se guarda con el proyecto, sale en el PDF/imagen del croquis y en la copia de seguridad.

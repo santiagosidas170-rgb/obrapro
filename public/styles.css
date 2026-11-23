@@ -738,7 +738,7 @@ dialog h2 { margin-top: 0; }
 
 /* ---------- Etapa 13: croquis ---------- */
 .croquis-card{padding:8px}
-.croquis-card canvas{display:block;width:100%;height:min(62vh,560px);touch-action:none;background:#fff;border-radius:8px;cursor:grab}
+.croquis-card canvas{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;display:block;width:100%;height:min(62vh,560px);touch-action:none;background:#fff;border-radius:8px;cursor:grab}
 .croquis-card canvas:focus-visible{outline:3px solid #1d6fd8}
 .lista-ab{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
 .rp-croquis{display:block;width:100%;height:auto;border:1px solid #d8d2c6;border-radius:6px}
