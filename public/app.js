@@ -3,7 +3,7 @@
    guardado local y copia de seguridad. */
 'use strict';
 
-const VERSION_APP = '1.6.0 (Etapa 14: elementos y zoom en el croquis)';
+const VERSION_APP = '1.7.0 (Etapa 15: muebles con forma real en el croquis)';
 
 /* Íconos dibujados (la tipografía Lato no incluye ✓ ni ✕) */
 const ICONO_CHECK = '<svg class="ico-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>';

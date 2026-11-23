@@ -3,7 +3,7 @@
 Aplicación web progresiva (PWA) para levantamientos de obra y remodelación.
 Funciona sin internet y guarda los datos solo en el dispositivo.
 
-**Versión:** 1.6.0 (Etapa 14: elementos y zoom en el croquis)
+**Versión:** 1.7.0 (Etapa 15: muebles con forma real en el croquis)
 
 **Documentación:** [GUIA.md](GUIA.md) (cómo usar la app y hacer copias de seguridad) · [PRUEBAS.md](PRUEBAS.md) (qué se probó, qué falta probar en la tablet)
 
