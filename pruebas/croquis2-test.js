@@ -26,7 +26,7 @@ const SKIP = () => { try { sessionStorage.setItem('obrapro-splash', '1'); } catc
     medidasOk: ELEMENTOS_CROQUIS.every(x => x[3] > 0 && x[4] > 0 && x[3] < 5 && x[4] < 5),
     coloresOk: ELEMENTOS_CROQUIS.every(x => COLOR_GRUPO_CQ[x[2]]),
     a: cajaElemento({ x: 1, y: 2, w: 0.4, h: 0.7, rot: false }), b: cajaElemento({ x: 1, y: 2, w: 0.4, h: 0.7, rot: true }) }));
-  check('A. El catálogo trae 25 elementos sin repetir', g.n === 25 && g.unicos === 25, JSON.stringify(g));
+  check('A. El catálogo trae 28 elementos sin repetir', g.n === 28 && g.unicos === 28, JSON.stringify(g));
   check('A. Hay muebles, cocina, baño, estructura, instalaciones y texto', ['Baño', 'Cocina', 'Estructura', 'Instalaciones', 'Recámara', 'Sala y comedor', 'Texto'].every(x => g.grupos.includes(x)));
   check('A. Todas las medidas y colores son válidos', g.medidasOk && g.coloresOk);
   check('A. Girar intercambia ancho y largo de la caja', g.a.w === 0.4 && g.a.h === 0.7 && g.b.w === 0.7 && g.b.h === 0.4);
@@ -49,7 +49,7 @@ const SKIP = () => { try { sessionStorage.setItem('obrapro-splash', '1'); } catc
   check('B. Hay botón "Agregar elemento"', await page.isVisible('#cq-agregar'));
   await page.click('#cq-agregar'); await page.waitForSelector('dialog.dlg-form[open]');
   const opciones = await page.$$eval('#fm-tipo option', os => os.map(o => o.textContent));
-  check('B. El formulario ofrece los 25 elementos con su grupo', opciones.length === 25 && opciones.some(o => o.startsWith('Baño · WC')), String(opciones.length));
+  check('B. El formulario ofrece los 28 elementos con su grupo', opciones.length === 28 && opciones.some(o => o.startsWith('Baño · WC')), String(opciones.length));
   await page.selectOption('#fm-tipo', 'wc'); await page.click('dialog.dlg-form button[value=ok]');
   await page.waitForFunction(() => document.querySelector('#cq-edel'));
   let el = await elementos();

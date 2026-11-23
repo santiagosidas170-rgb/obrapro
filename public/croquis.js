@@ -89,20 +89,119 @@ function dibujarAbertura(ctx, v, c, a) {
 /* [tipo, nombre, grupo, ancho m, largo m, dibujo] */
 const ELEMENTOS_CROQUIS = [
   ['cama-matrimonial', 'Cama matrimonial', 'Recámara', 1.5, 2.0, 'cama'], ['cama-individual', 'Cama individual', 'Recámara', 0.9, 1.9, 'cama'],
-  ['closet', 'Clóset', 'Recámara', 1.8, 0.6, 'rect'], ['buro', 'Buró', 'Recámara', 0.5, 0.4, 'rect'], ['escritorio', 'Escritorio', 'Recámara', 1.2, 0.6, 'rect'],
-  ['sofa', 'Sofá', 'Sala y comedor', 2.0, 0.9, 'rect'], ['mesa-comedor', 'Mesa de comedor', 'Sala y comedor', 1.6, 0.9, 'rect'],
-  ['mesa-centro', 'Mesa de centro', 'Sala y comedor', 1.0, 0.6, 'rect'], ['mueble-tv', 'Mueble de TV', 'Sala y comedor', 1.4, 0.4, 'rect'],
-  ['estufa', 'Estufa', 'Cocina', 0.6, 0.6, 'estufa'], ['refri', 'Refrigerador', 'Cocina', 0.7, 0.7, 'rect'],
-  ['fregadero', 'Fregadero', 'Cocina', 0.9, 0.5, 'lavabo'], ['barra', 'Barra o isla', 'Cocina', 1.5, 0.8, 'rect'],
+  ['closet', 'Clóset', 'Recámara', 1.8, 0.6, 'closet'], ['buro', 'Buró', 'Recámara', 0.5, 0.4, 'buro'], ['escritorio', 'Escritorio', 'Recámara', 1.2, 0.6, 'escritorio'],
+  ['sofa', 'Sofá', 'Sala y comedor', 2.0, 0.9, 'sofa'], ['mesa-comedor', 'Mesa de comedor', 'Sala y comedor', 1.6, 0.9, 'comedor'],
+  ['mesa-centro', 'Mesa de centro', 'Sala y comedor', 1.0, 0.6, 'centro'], ['mueble-tv', 'Mueble de TV', 'Sala y comedor', 1.4, 0.4, 'mueble-tv'],
+  ['silla', 'Silla', 'Sala y comedor', 0.45, 0.45, 'silla'], ['librero', 'Librero', 'Sala y comedor', 0.9, 0.3, 'librero'],
+  ['estufa', 'Estufa', 'Cocina', 0.6, 0.6, 'estufa'], ['refri', 'Refrigerador', 'Cocina', 0.7, 0.7, 'refri'],
+  ['fregadero', 'Fregadero', 'Cocina', 0.9, 0.5, 'fregadero'], ['barra', 'Barra o isla', 'Cocina', 1.5, 0.8, 'barra'],
+  ['lavadora', 'Lavadora', 'Cocina', 0.6, 0.65, 'lavadora'],
   ['wc', 'WC', 'Baño', 0.4, 0.7, 'wc'], ['lavabo', 'Lavabo', 'Baño', 0.55, 0.45, 'lavabo'],
-  ['regadera', 'Regadera', 'Baño', 0.9, 0.9, 'regadera'], ['tina', 'Tina', 'Baño', 0.75, 1.6, 'lavabo'],
+  ['regadera', 'Regadera', 'Baño', 0.9, 0.9, 'regadera'], ['tina', 'Tina', 'Baño', 0.75, 1.6, 'tina'],
   ['escalera', 'Escalera', 'Estructura', 1.0, 2.4, 'escalera'], ['columna', 'Columna', 'Estructura', 0.3, 0.3, 'columna'],
   ['contacto', 'Contacto', 'Instalaciones', 0.3, 0.3, 'contacto'], ['apagador', 'Apagador', 'Instalaciones', 0.3, 0.3, 'apagador'],
-  ['luminaria', 'Luminaria', 'Instalaciones', 0.4, 0.4, 'luminaria'], ['clima', 'Aire acondicionado', 'Instalaciones', 0.9, 0.3, 'rect'],
-  ['tablero', 'Medidor o tablero', 'Instalaciones', 0.4, 0.5, 'rect'], ['nota', 'Nota de texto', 'Texto', 1.2, 0.4, 'nota']
+  ['luminaria', 'Luminaria', 'Instalaciones', 0.4, 0.4, 'luminaria'], ['clima', 'Aire acondicionado', 'Instalaciones', 0.9, 0.3, 'clima'],
+  ['tablero', 'Medidor o tablero', 'Instalaciones', 0.4, 0.5, 'tablero'], ['nota', 'Nota de texto', 'Texto', 1.2, 0.4, 'nota']
 ];
 const COLOR_GRUPO_CQ = { 'Recámara': '#f1e6d3', 'Sala y comedor': '#f1e6d3', 'Cocina': '#dde9f4', 'Baño': '#dde9f4', 'Estructura': '#d4d7da', 'Instalaciones': '#fbeec2', 'Texto': 'rgba(0,0,0,0)' };
 const defElemento = tipo => ELEMENTOS_CROQUIS.find(x => x[0] === tipo);
+
+/* Dibujos de muebles y aparatos, vistos desde arriba. Coordenadas locales: el centro es (0,0);
+   la parte de arriba (ly) es la cabecera, el respaldo o la pared. */
+const SIN_ROTULO = ['cama', 'escritorio', 'mueble-tv', 'wc', 'lavabo', 'regadera', 'tina', 'escalera', 'columna', 'contacto', 'apagador', 'luminaria', 'estufa', 'silla', 'buro', 'lavadora', 'fregadero', 'nota'];
+
+function rrCQ(ctx, x, y, w, h, r) {
+  r = Math.max(0, Math.min(r, w / 2, h / 2));
+  ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+}
+
+function dibujarMueble(ctx, dib, e, k, lx, ly, w0, h0, caja) {
+  const claro = '#fbf8f2', agua = '#f4f9fd', trazo = () => ctx.stroke();
+  const rr = (x, y, w, h, r, rel) => { rrCQ(ctx, x, y, w, h, r); if (rel) { ctx.fillStyle = rel; ctx.fill(); } ctx.stroke(); };
+  const circ = (x, y, r, rel) => { ctx.beginPath(); ctx.arc(x, y, Math.max(0.5, r), 0, 7); if (rel) { ctx.fillStyle = rel; ctx.fill(); } ctx.stroke(); };
+  const lin = (x1, y1, x2, y2) => { ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); };
+  const m = Math.min(w0, h0), cx = lx + w0 / 2, cy = ly + h0 / 2;
+  if (dib === 'cama') {
+    rr(lx, ly, w0, h0, m * 0.06, '#f1e6d3');
+    const dos = e.w >= 1.2, pw = dos ? (w0 - m * 0.2) / 2 : w0 - m * 0.2, ph = h0 * 0.17;
+    rr(lx, ly, w0, h0 * 0.06, 2, '#e2d2b8');
+    rr(lx + m * 0.08, ly + h0 * 0.08, pw - (dos ? m * 0.02 : 0), ph, m * 0.08, '#ffffff');
+    if (dos) rr(lx + m * 0.12 + pw, ly + h0 * 0.08, pw - m * 0.02, ph, m * 0.08, '#ffffff');
+    rr(lx, ly + h0 * 0.34, w0, h0 * 0.66, m * 0.06, '#e9dcc4');
+    lin(lx, ly + h0 * 0.42, lx + w0, ly + h0 * 0.42);
+  } else if (dib === 'buro') {
+    caja(); circ(cx, cy, m * 0.28, '#fff3b0'); circ(cx, cy, m * 0.1);
+  } else if (dib === 'closet') {
+    caja(); const n = Math.max(1, Math.round((w0 >= h0 ? e.w : e.h) / 0.6)), lar = w0 >= h0;
+    for (let i = 1; i < n; i++) { if (lar) lin(lx + w0 * i / n, ly, lx + w0 * i / n, ly + h0); else lin(lx, ly + h0 * i / n, lx + w0, ly + h0 * i / n); }
+    if (lar) lin(lx, ly + h0 * 0.18, lx + w0, ly + h0 * 0.18); else lin(lx + w0 * 0.18, ly, lx + w0 * 0.18, ly + h0);
+  } else if (dib === 'escritorio') {
+    rr(lx, ly, w0, h0, m * 0.04, '#f1e6d3'); rr(lx + w0 * 0.72, ly, w0 * 0.28, h0, 2, '#e6d7bd');
+    lin(lx + w0 * 0.72, ly + h0 * 0.5, lx + w0, ly + h0 * 0.5);
+    rr(cx - m * 0.28 - w0 * 0.12, ly + h0 * 0.52, m * 0.56, m * 0.5, m * 0.14, claro);
+  } else if (dib === 'sofa') {
+    const lar = w0 >= h0, L = lar ? w0 : h0, T = lar ? h0 : w0;
+    rr(lx, ly, w0, h0, m * 0.1, '#e8dcc6');
+    const br = T * 0.26, ar = T * 0.2;
+    ctx.save(); ctx.fillStyle = '#d8c8aa';
+    if (lar) { rr(lx, ly, w0, br, m * 0.1, '#d8c8aa'); rr(lx, ly + br * 0.6, ar, h0 - br * 0.6, m * 0.08, '#d8c8aa'); rr(lx + w0 - ar, ly + br * 0.6, ar, h0 - br * 0.6, m * 0.08, '#d8c8aa');
+      const n = Math.max(1, Math.round((w0 - 2 * ar) / (0.7 * k))); for (let i = 0; i < n; i++) rr(lx + ar + (w0 - 2 * ar) * i / n + 1, ly + br, (w0 - 2 * ar) / n - 2, h0 - br - 2, m * 0.08, '#f4ecdc'); }
+    else { rr(lx, ly, w0, h0, m * 0.1, '#e8dcc6'); const n = Math.max(1, Math.round((h0 - 2 * ar) / (0.7 * k))); for (let i = 0; i < n; i++) rr(lx + 2, ly + ar + (h0 - 2 * ar) * i / n + 1, w0 - 4, (h0 - 2 * ar) / n - 2, m * 0.08, '#f4ecdc'); }
+    ctx.restore();
+  } else if (dib === 'comedor') {
+    const lar = w0 >= h0, n = Math.max(2, Math.round((lar ? e.w : e.h) / 0.55)), s = Math.min(m * 0.42, 0.42 * k), sal = s * 0.45;
+    for (let i = 0; i < n; i++) { const t = ((i + 0.5) / n);
+      if (lar) { rr(lx + w0 * t - s / 2, ly - sal, s, s, s * 0.25, claro); rr(lx + w0 * t - s / 2, ly + h0 - s + sal, s, s, s * 0.25, claro); }
+      else { rr(lx - sal, ly + h0 * t - s / 2, s, s, s * 0.25, claro); rr(lx + w0 - s + sal, ly + h0 * t - s / 2, s, s, s * 0.25, claro); } }
+    rr(lx, ly, w0, h0, m * 0.05, '#ecdcc0');
+  } else if (dib === 'centro') {
+    rr(lx, ly, w0, h0, m * 0.12, '#ecdcc0'); rr(lx + m * 0.1, ly + m * 0.1, w0 - m * 0.2, h0 - m * 0.2, m * 0.08, '#f7f1e4');
+  } else if (dib === 'mueble-tv') {
+    caja(); const lar = w0 >= h0; ctx.save(); ctx.lineWidth *= 2.2; if (lar) lin(lx + w0 * 0.2, ly + h0 * 0.28, lx + w0 * 0.8, ly + h0 * 0.28); else lin(lx + w0 * 0.28, ly + h0 * 0.2, lx + w0 * 0.28, ly + h0 * 0.8); ctx.restore();
+  } else if (dib === 'silla') {
+    rr(lx, ly, w0, h0, m * 0.2, '#f1e6d3'); rr(lx, ly, w0, h0 * 0.22, m * 0.1, '#e2d2b8');
+  } else if (dib === 'librero') {
+    caja(); const n = Math.max(2, Math.round((w0 >= h0 ? e.w : e.h) / 0.3));
+    for (let i = 1; i < n; i++) { if (w0 >= h0) lin(lx + w0 * i / n, ly, lx + w0 * i / n, ly + h0); else lin(lx, ly + h0 * i / n, lx + w0, ly + h0 * i / n); }
+  } else if (dib === 'estufa') {
+    caja(); for (const [a, c] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) circ(cx + a * w0 * 0.24, cy + c * h0 * 0.22, m * 0.14);
+    for (const [a, c] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) circ(cx + a * w0 * 0.24, cy + c * h0 * 0.22, m * 0.06);
+    for (let i = 0; i < 4; i++) circ(lx + w0 * (0.2 + 0.2 * i), ly + h0 * 0.93, Math.max(1, m * 0.025));
+  } else if (dib === 'refri') {
+    caja(); lin(lx, ly + h0 * 0.36, lx + w0, ly + h0 * 0.36); lin(lx + w0 * 0.12, ly + h0 * 0.25, lx + w0 * 0.12, ly + h0 * 0.32); lin(lx + w0 * 0.12, ly + h0 * 0.42, lx + w0 * 0.12, ly + h0 * 0.52);
+  } else if (dib === 'fregadero') {
+    caja(); const lar = w0 >= h0;
+    if (lar) { rr(lx + w0 * 0.06, ly + h0 * 0.18, w0 * 0.4, h0 * 0.64, m * 0.1, agua); rr(lx + w0 * 0.54, ly + h0 * 0.18, w0 * 0.3, h0 * 0.64, m * 0.1, agua); circ(lx + w0 * 0.92, cy, m * 0.07, '#fff'); }
+    else { rr(lx + w0 * 0.18, ly + h0 * 0.06, w0 * 0.64, h0 * 0.4, m * 0.1, agua); rr(lx + w0 * 0.18, ly + h0 * 0.54, w0 * 0.64, h0 * 0.3, m * 0.1, agua); circ(cx, ly + h0 * 0.92, m * 0.07, '#fff'); }
+  } else if (dib === 'barra') {
+    const lar = w0 >= h0, s = Math.min(m * 0.3, 0.3 * k), n = Math.max(2, Math.round((lar ? e.w : e.h) / 0.6));
+    for (let i = 0; i < n; i++) { const t = (i + 0.5) / n; if (lar) circ(lx + w0 * t, ly + h0 + s * 0.35, s / 2, claro); else circ(lx + w0 + s * 0.35, ly + h0 * t, s / 2, claro); }
+    rr(lx, ly, w0, h0, m * 0.04, '#dde9f4'); rr(lx + m * 0.06, ly + m * 0.06, w0 - m * 0.12, h0 - m * 0.12, m * 0.03);
+  } else if (dib === 'lavadora') {
+    caja(); circ(cx, cy + h0 * 0.08, m * 0.3, agua); circ(cx, cy + h0 * 0.08, m * 0.16); circ(lx + w0 * 0.2, ly + h0 * 0.12, Math.max(1, m * 0.05));
+  } else if (dib === 'wc') {
+    rr(lx + w0 * 0.08, ly, w0 * 0.84, h0 * 0.26, m * 0.08, '#f4f9fd');
+    ctx.beginPath(); ctx.moveTo(lx + w0 * 0.08, ly + h0 * 0.3); ctx.bezierCurveTo(lx + w0 * 0.02, ly + h0 * 0.95, lx + w0 * 0.98, ly + h0 * 0.95, lx + w0 * 0.92, ly + h0 * 0.3); ctx.closePath(); ctx.fillStyle = '#f4f9fd'; ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.ellipse(cx, ly + h0 * 0.58, w0 * 0.27, h0 * 0.2, 0, 0, 7); ctx.stroke();
+  } else if (dib === 'lavabo') {
+    rr(lx, ly, w0, h0, m * 0.1, '#e9f1f8'); ctx.beginPath(); ctx.ellipse(cx, cy + h0 * 0.06, w0 * 0.34, h0 * 0.3, 0, 0, 7); ctx.fillStyle = '#ffffff'; ctx.fill(); ctx.stroke();
+    circ(cx, ly + h0 * 0.14, Math.max(1.5, m * 0.05), '#fff'); circ(cx, cy + h0 * 0.06, Math.max(1, m * 0.04));
+  } else if (dib === 'regadera') {
+    caja('#e9f1f8'); lin(lx, ly, lx + w0, ly + h0); lin(lx + w0, ly, lx, ly + h0); circ(cx, cy, m * 0.14, '#fff'); circ(cx, cy, Math.max(1, m * 0.04));
+  } else if (dib === 'tina') {
+    const lar = w0 >= h0; rr(lx, ly, w0, h0, m * 0.12, '#e9f1f8'); rr(lx + m * 0.1, ly + m * 0.1, w0 - m * 0.2, h0 - m * 0.2, m * 0.32, '#ffffff');
+    if (lar) { circ(lx + w0 - m * 0.3, cy, Math.max(1.5, m * 0.05)); circ(lx + m * 0.32, cy, Math.max(1, m * 0.04), '#fff'); }
+    else { circ(cx, ly + h0 - m * 0.3, Math.max(1.5, m * 0.05)); circ(cx, ly + m * 0.32, Math.max(1, m * 0.04), '#fff'); }
+  } else if (dib === 'escalera') {
+    caja(); const n = Math.max(3, Math.round(e.h / 0.25)); ctx.beginPath(); for (let i = 1; i < n; i++) { ctx.moveTo(lx, ly + h0 * i / n); ctx.lineTo(lx + w0, ly + h0 * i / n); } ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, ly + h0 * 0.9); ctx.lineTo(0, ly + h0 * 0.1); ctx.lineTo(-w0 * 0.12, ly + h0 * 0.2); ctx.moveTo(0, ly + h0 * 0.1); ctx.lineTo(w0 * 0.12, ly + h0 * 0.2); ctx.stroke();
+  } else if (dib === 'clima') {
+    caja(); const lar = w0 >= h0; for (let i = 1; i < 4; i++) { if (lar) lin(lx + w0 * 0.08, ly + h0 * i / 4, lx + w0 * 0.92, ly + h0 * i / 4); else lin(lx + w0 * i / 4, ly + h0 * 0.08, lx + w0 * i / 4, ly + h0 * 0.92); }
+  } else if (dib === 'tablero') {
+    caja(); rr(lx + w0 * 0.12, ly + h0 * 0.12, w0 * 0.76, h0 * 0.76, 2, '#fff'); for (let i = 1; i < 4; i++) lin(lx + w0 * 0.2, ly + h0 * (0.12 + 0.19 * i), lx + w0 * 0.8, ly + h0 * (0.12 + 0.19 * i));
+  } else caja();
+}
 
 /* Caja que ocupa un elemento ya girado (en metros). */
 const cajaElemento = e => ({ x: e.x, y: e.y, w: e.rot ? e.h : e.w, h: e.rot ? e.w : e.h });
@@ -122,25 +221,20 @@ function dibujarElemento(ctx, v, e, selec) {
   else if (dib === 'apagador') { caja(); ctx.beginPath(); ctx.moveTo(-w0 * 0.25, h0 * 0.25); ctx.lineTo(w0 * 0.25, -h0 * 0.25); ctx.stroke(); ctx.beginPath(); ctx.arc(-w0 * 0.25, h0 * 0.25, Math.max(1.5, k * 0.025), 0, 7); ctx.stroke(); }
   else if (dib === 'luminaria') { ctx.fillStyle = COLOR_GRUPO_CQ[def[2]]; ctx.beginPath(); ctx.arc(0, 0, Math.min(w0, h0) / 2, 0, 7); ctx.fill(); ctx.stroke(); ctx.beginPath(); ctx.moveTo(-w0 * 0.32, -h0 * 0.32); ctx.lineTo(w0 * 0.32, h0 * 0.32); ctx.moveTo(w0 * 0.32, -h0 * 0.32); ctx.lineTo(-w0 * 0.32, h0 * 0.32); ctx.stroke(); }
   else {
-    caja();
-    if (dib === 'cama') { ctx.strokeRect(lx + w0 * 0.08, ly + h0 * 0.05, w0 * 0.84, h0 * 0.2); }                         /* almohadas arriba */
-    else if (dib === 'estufa') { for (const [a, c] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { ctx.beginPath(); ctx.arc(a * w0 * 0.24, c * h0 * 0.24, Math.min(w0, h0) * 0.15, 0, 7); ctx.stroke(); } }
-    else if (dib === 'lavabo') { ctx.beginPath(); ctx.ellipse(0, 0, w0 * 0.36, h0 * 0.34, 0, 0, 7); ctx.stroke(); }
-    else if (dib === 'wc') { ctx.strokeRect(lx + w0 * 0.1, ly + h0 * 0.04, w0 * 0.8, h0 * 0.26); ctx.beginPath(); ctx.ellipse(0, h0 * 0.16, w0 * 0.36, h0 * 0.3, 0, 0, 7); ctx.stroke(); }
-    else if (dib === 'regadera') { ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(lx + w0, ly + h0); ctx.moveTo(lx + w0, ly); ctx.lineTo(lx, ly + h0); ctx.stroke(); ctx.beginPath(); ctx.arc(0, 0, Math.min(w0, h0) * 0.12, 0, 7); ctx.stroke(); }
-    else if (dib === 'escalera') { const n = Math.max(3, Math.round(e.h / 0.25)); ctx.beginPath(); for (let i = 1; i < n; i++) { ctx.moveTo(lx, ly + h0 * i / n); ctx.lineTo(lx + w0, ly + h0 * i / n); } ctx.stroke(); ctx.beginPath(); ctx.moveTo(0, ly + h0 * 0.9); ctx.lineTo(0, ly + h0 * 0.1); ctx.lineTo(-w0 * 0.12, ly + h0 * 0.2); ctx.moveTo(0, ly + h0 * 0.1); ctx.lineTo(w0 * 0.12, ly + h0 * 0.2); ctx.stroke(); }
+    dibujarMueble(ctx, dib, e, k, lx, ly, w0, h0, caja);
   }
   ctx.restore();
   /* nombre o texto (sin girar) */
-  const texto = dib === 'nota' ? (e.texto || 'Nota') : (['rect', 'cama'].includes(dib) ? def[1] : '');
+  const texto = dib === 'nota' ? (e.texto || 'Nota') : (SIN_ROTULO.includes(dib) ? '' : def[1]);
   if (texto) {
     let tam = Math.max(9, Math.min(15, k * 0.2));
     ctx.font = `${dib === 'nota' ? 700 : 400} ${tam}px ${FUENTE_CQ}`;
     const ancho = ctx.measureText(texto).width;
     if (dib === 'nota' || ancho <= Math.max(W, Hh) - 6) {
       ctx.fillStyle = '#16212d'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      if (dib !== 'nota' && Hh > W * 1.4) { ctx.save(); ctx.translate(cx, cy); ctx.rotate(-Math.PI / 2); ctx.fillText(texto, 0, 0); ctx.restore(); }
-      else ctx.fillText(texto, cx, cy);
+      ctx.strokeStyle = 'rgba(255,255,255,.85)'; ctx.lineWidth = 3; ctx.lineJoin = 'round';
+      if (dib !== 'nota' && Hh > W * 1.4) { ctx.save(); ctx.translate(cx, cy); ctx.rotate(-Math.PI / 2); ctx.strokeText(texto, 0, 0); ctx.fillText(texto, 0, 0); ctx.restore(); }
+      else { ctx.strokeText(texto, cx, cy); ctx.fillText(texto, cx, cy); }
     }
   }
   if (selec) { ctx.save(); ctx.strokeStyle = '#1d6fd8'; ctx.lineWidth = 2; ctx.setLineDash([6, 4]); ctx.strokeRect(X - 3, Y - 3, W + 6, Hh + 6); ctx.restore(); }

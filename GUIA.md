@@ -83,4 +83,5 @@ En la pestaña **Croquis** toca **＋ Agregar** para poner cosas sobre el plano:
 - Toca un elemento para seleccionarlo: puedes **girarlo, cambiar su tamaño, duplicarlo o borrarlo**.
 - Arrastra espacios y elementos para acomodarlos (se pegan a una cuadrícula de 5 cm). Flechas del teclado mueven 5 cm.
 - Arrastra el fondo para **desplazar** el plano; **＋ / －** o dos dedos para acercar/alejar; **Ver todo** para encuadrar.
+- Los muebles se dibujan con su forma vista desde arriba (cama con almohadas, sofá con cojines, comedor con sillas, tina, WC, estufa…); hay 28 elementos.
 - Todo se guarda con el proyecto, sale en el PDF/imagen del croquis y en la copia de seguridad.
