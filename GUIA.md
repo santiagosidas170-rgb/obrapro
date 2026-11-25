@@ -94,3 +94,14 @@ La pestaña **Contrato** tiene dos documentos distintos, separados de los avance
 - **Orden de trabajo (quien hace la obra):** nombre, esquema de pago (total, destajo o jornal), cuánto se le paga, quién pone los materiales e indicaciones. El PDF lleva qué hacer con cantidades, croquis y lista de materiales, sin precios. **No lleva lo que cobras al cliente.**
 
 Cada PDF se descarga por separado. El contrato es un formato comercial; no sustituye asesoría legal.
+
+## Avances por etapas y semanas (Etapa 17)
+
+La pestaña **Avances** muestra cómo va la obra, sin dinero:
+
+- **Etapas:** agrega las tuyas o toca **Cargar etapas sugeridas** (preparación, tablaroca, impermeabilización, resane, pintura, limpieza). En cada una toca 0, 25, 50, 75 o 100 %, o **Editar** para poner el porcentaje exacto, el **peso** (si pesa más que las demás), fechas y una nota.
+- **Avance general:** promedio de las etapas según su peso.
+- **Cerrar semana:** guarda cómo va cada etapa ese día (la semana va de lunes a domingo) y una nota. Así queda el historial con el cambio de cada semana. Si cierras la misma semana otra vez, se actualiza.
+- **PDF de avance:** etapas con su estado, avance general y semanas. Sirve para el cliente o para el trabajador.
+
+Las fotos, pagos y gastos siguen en **Obra**, y el contrato y la orden de trabajo en **Contrato**.

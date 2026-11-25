@@ -17,12 +17,13 @@ Se corren con `bash pruebas/ejecutar.sh` (necesita Node.js, Playwright con Chrom
 | `croquis-test.js` | 35 | Croquis: geometría (cm→m, irregular, imán, acomodo sin encimar), arrastre y teclado, puertas y ventanas con validación, girar, PDF e imagen, opción en el reporte, celular y tablet. |
 | `croquis2-test.js` | 37 | Elementos del croquis: catálogo de 25, agregar, nota, editar tamaño y texto, duplicar, borrar, arrastre, teclado, zoom, desplazar, pellizco, guardado, PDF y respaldo. |
 | `contrato-test.js` | 25 | Pestaña Contrato: datos guardados, validación del monto, PDF del contrato (sin utilidad ni costos), PDF de la orden de trabajo (sin precios al cliente), copia de seguridad y celular/tablet. |
+| `etapas-test.js` | 26 | Pestaña Avances: promedio ponderado, semanas (lunes a domingo), etapas sugeridas, validación, cerrar y actualizar semana, PDF sin dinero, copia de seguridad y celular/tablet. |
 | `listas-test.js` | 32 | Listas de materiales y mano de obra: cantidades con desperdicio, piezas redondeadas, totales, agrupación, copiar texto, PDF (1 y varias páginas), celular y tablet. |
 | `reporte-test.js` | 56 | Datos y firmas, selección de espacios, contenido del reporte, PDF propio y por impresión, tablet y celular. |
 | `backup-test.js` | 24 | Copia con 40 fotos (7 MB): ida y vuelta idéntica byte a byte, archivos dañados, copia vieja, registros inválidos. |
 | `tabla-ancho.js` | 12 | La tabla de conceptos cabe completa en cada tamaño de pantalla. |
 
-**Total: 636 comprobaciones, todas correctas** en la última corrida.
+**Total: 662 comprobaciones, todas correctas** en la última corrida.
 
 ### Problemas que las pruebas encontraron y se corrigieron
 

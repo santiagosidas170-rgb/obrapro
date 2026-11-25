@@ -744,3 +744,16 @@ dialog h2 { margin-top: 0; }
 .rp-croquis{display:block;width:100%;height:auto;border:1px solid #d8d2c6;border-radius:6px}
 .rp-nota{font-size:.8rem;color:#6b645a;margin:6px 0 0}
 @media print{.rp-croquis{break-inside:avoid}}
+
+/* ---------- Avances por etapas (Etapa 17) ---------- */
+.barra-av { display: block; flex: 1; height: 14px; border-radius: 8px; background: var(--surface-3); overflow: hidden; min-width: 60px; }
+.barra-av > span { display: block; height: 100%; background: var(--accent); border-radius: 8px; transition: width .3s var(--ease); }
+.av-grande { display: flex; align-items: center; gap: 1rem; margin-bottom: .6rem; }
+.av-grande strong { font-size: 2rem; min-width: 5.5rem; }
+.av-etapa { padding: .8rem 0; border-top: 1px solid var(--border); display: grid; gap: .35rem; }
+.av-etapa:first-of-type { border-top: 0; }
+.av-fila { display: flex; align-items: center; gap: .7rem; justify-content: space-between; }
+.av-n { min-width: 4.2rem; text-align: right; font-weight: 700; }
+.av-chips { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .2rem; }
+.btn.chip.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.av-sem small { margin-left: .3rem; font-weight: 400; }
