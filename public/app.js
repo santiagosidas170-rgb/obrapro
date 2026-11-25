@@ -3,7 +3,7 @@
    guardado local y copia de seguridad. */
 'use strict';
 
-const VERSION_APP = '1.7.0 (Etapa 15: muebles con forma real en el croquis)';
+const VERSION_APP = '1.8.0 (Etapa 16: contrato y orden de trabajo)';
 
 /* Íconos dibujados (la tipografía Lato no incluye ✓ ni ✕) */
 const ICONO_CHECK = '<svg class="ico-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>';
@@ -393,6 +393,7 @@ const PESTANAS = [
   ['fotos', 'Fotos', true],
   ['conceptos', 'Conceptos', true],
   ['presupuesto', 'Presupuesto', true],
+  ['contrato', 'Contrato', true],
   ['listas', 'Listas', true],
   ['obra', 'Obra', true],
   ['reporte', 'Reporte', true]
@@ -429,6 +430,7 @@ async function vistaProyecto(id, pestana) {
   else if (pestana === 'fotos') await pestanaFotos(p);
   else if (pestana === 'conceptos') await pestanaConceptos(p);
   else if (pestana === 'presupuesto') await pestanaPresupuesto(p);
+  else if (pestana === 'contrato') await pestanaContrato(p);
   else if (pestana === 'listas') await pestanaListas(p);
   else if (pestana === 'obra') await pestanaObra(p);
   else if (pestana === 'reporte') await pestanaReporte(p);

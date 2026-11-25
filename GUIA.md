@@ -85,3 +85,12 @@ En la pestaña **Croquis** toca **＋ Agregar** para poner cosas sobre el plano:
 - Arrastra el fondo para **desplazar** el plano; **＋ / －** o dos dedos para acercar/alejar; **Ver todo** para encuadrar.
 - Los muebles se dibujan con su forma vista desde arriba (cama con almohadas, sofá con cojines, comedor con sillas, tina, WC, estufa…); hay 28 elementos.
 - Todo se guarda con el proyecto, sale en el PDF/imagen del croquis y en la copia de seguridad.
+
+## Contrato y orden de trabajo (Etapa 16)
+
+La pestaña **Contrato** tiene dos documentos distintos, separados de los avances (que siguen en la pestaña **Obra**):
+
+- **Contrato con el cliente:** número, plazo, inicio, anticipo (%), alcance, forma de pago y garantía. El PDF lleva los conceptos con su importe, el total y las firmas. **No enseña tus costos ni tu utilidad.**
+- **Orden de trabajo (quien hace la obra):** nombre, esquema de pago (total, destajo o jornal), cuánto se le paga, quién pone los materiales e indicaciones. El PDF lleva qué hacer con cantidades, croquis y lista de materiales, sin precios. **No lleva lo que cobras al cliente.**
+
+Cada PDF se descarga por separado. El contrato es un formato comercial; no sustituye asesoría legal.

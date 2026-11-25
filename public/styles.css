@@ -96,7 +96,7 @@ main { padding: 1rem 1rem 6.5rem; max-width: 1240px; margin: 0 auto; outline: no
 .sidenav a:active svg { transform: scale(.88); }
 
 @media (min-width: 900px) {
-  .app { display: grid; grid-template-columns: var(--nav-w) 1fr; }
+  .app { display: grid; grid-template-columns: var(--nav-w) minmax(0, 1fr); }
   .sidenav {
     position: sticky; top: 0; height: 100vh; height: 100dvh; flex-direction: column;
     padding: 1.1rem .7rem; gap: .3rem; background: var(--bg-nav); border-top: 0; border-right: 1px solid var(--border);
@@ -247,7 +247,7 @@ input.invalid, select.invalid { border-color: var(--danger); background: var(--d
 /* ---------- Pestañas ---------- */
 .tabs {
   display: flex; gap: .2rem; overflow-x: auto; border-bottom: 1px solid var(--border);
-  margin-bottom: 1.1rem; scrollbar-width: none;
+  margin-bottom: 1.1rem; scrollbar-width: none; min-width: 0; max-width: 100%;
 }
 .tabs::-webkit-scrollbar { display: none; }
 .tab {
