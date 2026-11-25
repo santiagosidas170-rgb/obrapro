@@ -3,7 +3,7 @@
 Aplicación web progresiva (PWA) para levantamientos de obra y remodelación.
 Funciona sin internet y guarda los datos solo en el dispositivo.
 
-**Versión:** 1.10.0 (Etapa 18: reporte semanal)
+**Versión:** 1.11.0 (Etapa 19: ver reporte semanal)
 
 **Documentación:** [GUIA.md](GUIA.md) (cómo usar la app y hacer copias de seguridad) · [PRUEBAS.md](PRUEBAS.md) (qué se probó, qué falta probar en la tablet)
 
@@ -75,7 +75,7 @@ La versión nueva aparece la segunda vez que se abre la app con internet.
 
 ## Pruebas
 
-`bash pruebas/ejecutar.sh` corre las 685 comprobaciones automáticas (fórmulas, pantallas, fotos, presupuesto, reporte, copias de seguridad). Detalle en [PRUEBAS.md](PRUEBAS.md). Usan Chromium de escritorio; la revisión en la tablet real es manual (lista en PRUEBAS.md).
+`bash pruebas/ejecutar.sh` corre las 694 comprobaciones automáticas (fórmulas, pantallas, fotos, presupuesto, reporte, copias de seguridad). Detalle en [PRUEBAS.md](PRUEBAS.md). Usan Chromium de escritorio; la revisión en la tablet real es manual (lista en PRUEBAS.md).
 
 ## Privacidad
 

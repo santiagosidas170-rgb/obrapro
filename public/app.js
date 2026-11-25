@@ -3,7 +3,7 @@
    guardado local y copia de seguridad. */
 'use strict';
 
-const VERSION_APP = '1.10.0 (Etapa 18: reporte semanal)';
+const VERSION_APP = '1.11.0 (Etapa 19: ver reporte semanal)';
 
 /* Íconos dibujados (la tipografía Lato no incluye ✓ ni ✕) */
 const ICONO_CHECK = '<svg class="ico-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>';
@@ -198,6 +198,7 @@ async function enrutar() {
       case 'concepto': await vistaConcepto(id); break;
       case 'catalogo': await vistaCatalogo(); break;
       case 'reporte': await vistaReporte(id); break;
+      case 'reporte-semanal': await vistaReporteSemanal(id, pestana); break;
       case 'ajustes': await vistaAjustes(); break;
       default: location.hash = '#/proyectos'; return;
     }
@@ -218,7 +219,7 @@ async function enrutar() {
 }
 
 function marcarMenu(vista) {
-  const mapa = { proyecto: 'proyectos', espacio: 'proyectos', foto: 'proyectos', partida: 'proyectos', reporte: 'proyectos', concepto: 'catalogo', nuevo: 'proyectos' };
+  const mapa = { proyecto: 'proyectos', espacio: 'proyectos', foto: 'proyectos', partida: 'proyectos', reporte: 'proyectos', 'reporte-semanal': 'proyectos', concepto: 'catalogo', nuevo: 'proyectos' };
   const activo = mapa[vista] || vista;
   $$('#nav a[data-view]').forEach(a => {
     const on = a.dataset.view === activo;

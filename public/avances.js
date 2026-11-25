@@ -276,14 +276,15 @@ async function pestanaReporteSemanal(p, cont) {
       <h3>Contenido</h3>
       <ul class="checks">${OPS.map(([k, t]) => `<li><label class="check"><input type="checkbox" data-sop="${k}"${op[k] ? ' checked' : ''}><span>${esc(t)}</span></label></li>`).join('')}</ul>
       <div id="rs-resumen" class="small muted"></div>
-      <div class="actions"><button class="btn primary grande" id="rs-pdf">Descargar PDF semanal</button></div>
+      <div class="actions"><a class="btn primary grande" id="rs-ver" href="#/reporte-semanal/${p.id}/${hoy()}">Ver reporte semanal</a>
+        <button class="btn" id="rs-pdf">Descargar PDF directo</button></div>
     </section>`;
   const lunes = () => lunesDe($('#rs-fecha').value || hoy());
   const refrescar = async () => {
-    const f = $('#rs-fecha').value; if (!f) { $('#rs-semana').textContent = 'Elige una fecha.'; $('#rs-pdf').disabled = true; return; }
-    $('#rs-pdf').disabled = false;
+    const f = $('#rs-fecha').value; if (!f) { $('#rs-semana').textContent = 'Elige una fecha.'; $('#rs-pdf').disabled = true; $('#rs-ver').setAttribute('aria-disabled', 'true'); return; }
+    $('#rs-pdf').disabled = false; $('#rs-ver').removeAttribute('aria-disabled');
     const l = lunes(), d = await datosSemana(p, l), nf = d.entradas.reduce((x, e) => x + e.fotos.length, 0);
-    $('#rs-semana').textContent = semanaTxt(l);
+    $('#rs-semana').textContent = semanaTxt(l); $('#rs-ver').href = `#/reporte-semanal/${p.id}/${l}`;
     $('#rs-resumen').innerHTML = [
       datosAvances(p).etapas.length ? `Avance general: <strong>${pctTxt(d.actual.general)}</strong>${d.cambio == null ? '' : ` (${d.cambio > 0 ? '+' : ''}${d.cambio} pts contra la semana anterior)`}${d.cerrada ? '' : ' · semana sin cerrar: se usan los porcentajes de hoy'}`
         : 'Aún no hay etapas en la pestaña Avances.',
@@ -299,4 +300,97 @@ async function pestanaReporteSemanal(p, cont) {
     b.disabled = false; b.textContent = t0;
   });
   await refrescar();
+}
+
+/* ---------- Vista previa del reporte semanal (igual que la del reporte de levantamiento) ---------- */
+
+async function vistaReporteSemanal(id, lunesParam) {
+  const p = await dbObtener('proyectos', id);
+  if (!p) { main().innerHTML = '<div class="card"><p>No se encontró el proyecto.</p><a class="btn" href="#/proyectos">Volver</a></div>'; return; }
+  const lunes = /^\d{4}-\d{2}-\d{2}$/.test(lunesParam || '') ? lunesDe(lunesParam) : lunesDe(hoy());
+  const op = Object.assign({ avance: true, obra: true, medidas: true, pagos: false }, (p.reporte && p.reporte.semanal) || {});
+  const c = datosContratista(), d = await datosSemana(p, lunes);
+
+  main().innerHTML = `
+    <div class="reporte-barra">
+      <a class="btn ghost" href="#/proyecto/${p.id}/reporte">← Volver</a>
+      <span class="muted" id="rp-estado">Preparando el PDF…</span>
+      <button class="btn primary" id="rp-descargar" disabled>Descargar PDF</button>
+      <button class="btn" id="rp-compartir" hidden disabled>Compartir PDF</button>
+      <a class="btn" id="rp-abrir" target="_blank" rel="noopener" hidden>Abrir PDF</a>
+      <button class="btn ghost" id="rp-imprimir" disabled>Imprimir</button>
+    </div>
+    <p class="reporte-ayuda no-print">Esta es la vista previa del reporte semanal. El PDF se prepara solo; cuando el botón <strong>Descargar PDF</strong> se active, tócalo.
+      El archivo queda en la carpeta Descargas de la tablet.</p>
+    <article class="hoja" id="hoja"></article>`;
+
+  const urlFoto = async f => {
+    if (op.medidas && f.anotaciones && f.anotaciones.length) { try { return urlDe(await renderizarFoto(f)); } catch (e) { /* usa la original */ } }
+    return urlDe(f.imagen);
+  };
+  let bloqueAvance = '';
+  if (op.avance && d.actual.etapas.length) {
+    const antes = new Map((d.prev ? d.prev.etapas : []).map(e => [e.id, e.pct]));
+    const filas = d.actual.etapas.map(e => { const a0 = antes.has(e.id) ? antes.get(e.id) : null, dif = a0 == null ? null : Math.round((e.pct - a0) * 10) / 10;
+      return `<tr><td><strong>${esc(e.nombre)}</strong></td><td>${estadoEtapa(e.pct)}</td><td class="n">${a0 == null ? '—' : pctTxt(a0)}</td><td class="n">${pctTxt(e.pct)}</td><td class="n">${dif == null ? '—' : (dif > 0 ? '+' : '') + dif + ' pts'}</td></tr>`; }).join('');
+    bloqueAvance = `<section class="rp-bloque"><h2>Avance de la semana</h2>
+      <div class="rp-avance"><div class="rp-barra" role="img" aria-label="${pctTxt(d.actual.general)}"><span style="width:${Math.max(0, Math.min(100, d.actual.general))}%"></span></div><strong>${pctTxt(d.actual.general)}</strong></div>
+      ${d.cambio != null ? `<p>Contra la semana anterior: ${d.cambio > 0 ? '+' : ''}${d.cambio} puntos.</p>` : ''}
+      ${d.cerrada ? '' : '<p class="small">Esta semana aún no está cerrada: se usan los porcentajes de hoy.</p>'}
+      <table class="rp-tabla"><thead><tr><th>Etapa</th><th>Estado</th><th class="n">Antes</th><th class="n">Ahora</th><th class="n">Cambio</th></tr></thead><tbody>${filas}</tbody></table>
+      ${d.actual.nota ? `<h4>Nota de la semana</h4><p>${parrafos(d.actual.nota)}</p>` : ''}</section>`;
+  }
+  let bloqueObra = '';
+  if (op.obra) {
+    let cuerpo = '';
+    for (const e of d.entradas) {
+      const figs = [];
+      for (const f of e.fotos) figs.push(`<figure class="rp-foto"><img src="${await urlFoto(f)}" alt="${esc(f.descripcion || 'Foto de obra')}">${f.descripcion ? `<figcaption>${esc(f.descripcion)}</figcaption>` : ''}</figure>`);
+      cuerpo += `<section class="rp-espacio"><h3>${esc(fecha(e.fecha))}</h3><p>${parrafos(e.texto || '')}</p>${figs.length ? `<div class="rp-fotos">${figs.join('')}</div>` : ''}</section>`;
+    }
+    bloqueObra = `<section class="rp-bloque"><h2>Trabajos y fotos de la semana</h2>${cuerpo || '<p class="small">No hay entradas en la bitácora de esta semana.</p>'}</section>`;
+  }
+  let bloquePagos = '';
+  if (op.pagos) {
+    const tot = d.pagos.reduce((x, m) => x + (m.monto || 0), 0);
+    bloquePagos = `<section class="rp-bloque"><h2>Pagos recibidos esta semana</h2>${d.pagos.length ? `
+      <table class="rp-tabla"><thead><tr><th>Fecha</th><th>Concepto</th><th>Forma de pago</th><th class="n">Monto</th></tr></thead>
+      <tbody>${d.pagos.map(m => `<tr><td>${esc(fecha(m.fecha))}</td><td>${esc(etiqueta(CONCEPTOS_PAGO, m.concepto))}${m.nota ? `<small>${esc(m.nota)}</small>` : ''}</td><td>${esc(etiqueta(METODOS_PAGO, m.metodo))}</td><td class="n">${formatoPesos(m.monto)}</td></tr>`).join('')}</tbody>
+      <tfoot><tr><td colspan="3">Total de la semana</td><td class="n">${formatoPesos(tot)}</td></tr></tfoot></table>` : '<p class="small">No hubo pagos esta semana.</p>'}</section>`;
+  }
+  const contacto = [c.telefono, c.correo].filter(Boolean).join(' · ');
+  $('#hoja').innerHTML = `
+    <header class="rp-encabezado">
+      <div class="rp-marca"><img src="${c.logo || 'logo.png'}" alt="Logo"><div><strong>${esc(c.empresa)}</strong>${contacto ? `<span>${esc(contacto)}</span>` : ''}</div></div>
+      <div class="rp-titulo"><h1>Reporte semanal</h1><span>${esc(fecha(hoy()))}</span></div>
+    </header>
+    <section class="rp-bloque"><h2>Proyecto</h2><table class="rp-datos"><tbody>
+      ${filaDato('Proyecto', p.nombre)}${filaDato('Cliente', p.cliente)}${filaDato('Dirección', p.direccion)}${filaDato('Responsable', p.responsable || c.empresa)}
+      ${filaDato('Semana', `${fecha(lunes)} al ${fecha(d.dom)}`)}</tbody></table></section>
+    ${bloqueAvance}${bloqueObra}${bloquePagos}
+    <p class="small rp-aviso">El avance es una estimación del contratista y puede ajustarse.</p>`;
+
+  const titulo0 = document.title;
+  document.title = `Reporte semanal - ${p.nombre} - ${hoy()}`;
+  alSalir(() => { document.title = titulo0; });
+  await Promise.all($$('#hoja img').map(im => im.decode ? im.decode().catch(() => {}) : Promise.resolve()));
+  const est = $('#rp-estado'), btn = $('#rp-imprimir');
+  if (!btn) return;
+  btn.disabled = false; btn.addEventListener('click', () => window.print());
+  const dl = $('#rp-descargar'), comp = $('#rp-compartir'), abrir = $('#rp-abrir');
+  try {
+    const { archivo } = await generarPDFSemanal(p, lunes, op);
+    if (!dl.isConnected) return;
+    abrir.href = urlDe(archivo); abrir.hidden = false;
+    est.textContent = `PDF listo (${(archivo.size / 1048576).toFixed(1)} MB)`;
+    dl.disabled = false;
+    dl.addEventListener('click', () => { descargarArchivo(archivo); aviso('Descargando ' + archivo.name + '. Búscalo en la carpeta Descargas.'); });
+    if (navigator.canShare && navigator.canShare({ files: [archivo] })) {
+      comp.hidden = false; comp.disabled = false;
+      comp.addEventListener('click', async () => {
+        try { await navigator.share({ files: [archivo], title: archivo.name }); }
+        catch (e) { if (e.name !== 'AbortError') aviso('No se pudo compartir: ' + e.message, 'error'); }
+      });
+    }
+  } catch (e) { console.error(e); if (est.isConnected) est.textContent = 'No se pudo preparar el PDF: ' + e.message; }
 }
