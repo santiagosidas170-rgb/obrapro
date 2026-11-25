@@ -757,3 +757,9 @@ dialog h2 { margin-top: 0; }
 .av-chips { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .2rem; }
 .btn.chip.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 .av-sem small { margin-left: .3rem; font-weight: 400; }
+
+/* Reporte semanal: barra de avance dentro de la hoja (también al imprimir) */
+.rp-avance { display: flex; align-items: center; gap: 14px; margin: 6px 0 10px; }
+.rp-avance strong { font-size: 1.4rem; min-width: 4.5rem; text-align: right; }
+.rp-barra { flex: 1; height: 16px; border-radius: 8px; background: #efe6d8; overflow: hidden; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.rp-barra > span { display: block; height: 100%; background: #9c7655; -webkit-print-color-adjust: exact; print-color-adjust: exact; }

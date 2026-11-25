@@ -111,7 +111,7 @@ Las fotos, pagos y gastos siguen en **Obra**, y el contrato y la orden de trabaj
 En la pestaña **Reporte** elige arriba cuál quieres:
 
 - **Reporte de levantamiento:** el de siempre (espacios, medidas, fotos, croquis, conceptos, presupuesto y firmas).
-- **Reporte semanal:** elige un día de la semana y baja el PDF de esa semana (lunes a domingo) con:
+- **Reporte semanal:** elige un día de la semana y toca **Ver reporte semanal**: se abre la vista previa en pantalla (igual que el otro reporte) con Descargar, Compartir, Abrir PDF e Imprimir. También hay **Descargar PDF directo**. El reporte es de esa semana (lunes a domingo) y lleva:
   - el **avance por etapas** (antes, ahora y cambio contra la semana anterior, de la pestaña Avances),
   - los **trabajos y fotos** de la bitácora de esa semana (pestaña Obra),
   - los **pagos recibidos** esa semana (opcional; nunca salen gastos).

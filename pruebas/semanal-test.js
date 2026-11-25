@@ -48,7 +48,7 @@ const INIT = () => {
   check('A. Por defecto abre el reporte de levantamiento de siempre (Ver reporte y espacios)', await page.isVisible('#rp-ver') && await page.isVisible('.seg.activo:has-text("levantamiento")'));
 
   await page.click('[data-rtipo=semanal]'); await page.waitForSelector('#rs-fecha'); await wait(200);
-  check('B. Reporte semanal: aparece la fecha y el botón de PDF; ya no el de "Ver reporte"', await page.isVisible('#rs-pdf') && !(await page.isVisible('#rp-ver')));
+  check('B. Reporte semanal: aparecen la fecha, "Ver reporte semanal" y el PDF directo; ya no el de levantamiento', await page.isVisible('#rs-ver') && await page.isVisible('#rs-pdf') && !(await page.isVisible('#rp-ver')));
   await page.fill('#rs-fecha', '2026-11-25'); await page.dispatchEvent('#rs-fecha', 'change'); await wait(400);
   const sem = (await page.textContent('#rs-semana')).trim(), res = (await page.textContent('#rs-resumen')).replace(/\s+/g, ' ');
   check('C. Muestra la semana (lunes 23 al domingo 29 nov)', sem.includes('23/11/2026') && sem.includes('29/11/2026'), sem);
@@ -89,6 +89,28 @@ const INIT = () => {
   [d] = await Promise.all([page.waitForEvent('download', { timeout: 40000 }), page.click('#rs-pdf')]);
   t = await textos();
   check('G. El PDF de una semana vacía lo dice con claridad y sigue siendo válido', t.includes('No hay entradas en la bitácora de esta semana.') && t.includes('aún no está cerrada'), t);
+
+  /* vista previa en pantalla, igual que el otro reporte */
+  await page.fill('#rs-fecha', '2026-11-25'); await page.dispatchEvent('#rs-fecha', 'change'); await wait(400);
+  check('L. Hay botón "Ver reporte semanal" y su enlace lleva a la semana elegida', (await page.getAttribute('#rs-ver', 'href')).endsWith('/reporte-semanal/' + id + '/2026-11-23'), await page.getAttribute('#rs-ver', 'href'));
+  await page.click('#rs-ver'); await page.waitForSelector('#hoja .rp-encabezado'); await wait(500);
+  const hoja = (await page.textContent('#hoja')).replace(/\s+/g, ' ');
+  check('L. La vista previa muestra la hoja: título, semana, avance 60 %, etapas y cambio', ['Reporte semanal', '23/11/2026 al 29/11/2026', '60 %', 'Tablaroca', '+60 pts', 'Semana productiva'].every(x => hoja.includes(x)), hoja.slice(0, 500));
+  check('L. Muestra la bitácora de esa semana con sus 2 fotos y no la de otra semana', hoja.includes('Se colocó la tablaroca.') && hoja.includes('Sin fotos hoy') && !hoja.includes('Entrada vieja') && (await page.locator('#hoja .rp-foto img').count()) === 2);
+  check('L. Respeta las opciones (pagos y fotos con medidas) y nunca muestra gastos', hoja.includes('Pagos recibidos esta semana') && hoja.includes('$5,000.00') && !hoja.includes('9,999.00') && !/Secreto|Proveedor|Utilidad/.test(hoja), hoja);
+  await page.waitForFunction(() => { const b = document.querySelector('#rp-descargar'); return b && !b.disabled; }, null, { timeout: 40000 });
+  check('L. Los botones son los mismos que en el otro reporte y el PDF se prepara solo', await page.isVisible('#rp-imprimir') && await page.isVisible('#rp-abrir') && (await page.textContent('#rp-estado')).includes('PDF listo'));
+  await textos();
+  const [dv] = await Promise.all([page.waitForEvent('download', { timeout: 30000 }), page.click('#rp-descargar')]);
+  const rv = SALIDA + '/' + dv.suggestedFilename(); await dv.saveAs(rv);
+  check('L. "Descargar PDF" de la vista previa baja el PDF semanal', fs.readFileSync(rv).slice(0, 5).toString() === '%PDF-' && /^Reporte semanal - /.test(dv.suggestedFilename()), dv.suggestedFilename());
+  await page.screenshot({ path: SALIDA + '/rs-vista.png', fullPage: true });
+  await page.goto(BASE + '#/reporte-semanal/' + id); await page.waitForSelector('#hoja .rp-encabezado');
+  check('L. Sin fecha en el enlace abre la semana de hoy sin error', (await page.textContent('#hoja')).includes('Reporte semanal'));
+  await page.goto(BASE + '#/reporte-semanal/' + id + '/basura'); await page.waitForSelector('#hoja .rp-encabezado');
+  check('L. Una fecha inválida en el enlace no rompe la pantalla', (await page.textContent('#hoja')).includes('Semana'));
+  await page.click('.reporte-barra a:has-text("Volver")'); await page.waitForSelector('#rs-fecha');
+  check('L. "Volver" regresa a la pestaña Reporte semanal', await page.isVisible('.seg.activo:has-text("semanal")'));
 
   /* volver al levantamiento */
   await page.click('[data-rtipo=levantamiento]'); await page.waitForSelector('#rp-ver');
