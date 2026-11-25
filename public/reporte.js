@@ -157,10 +157,27 @@ function conectarAjustesReporte() {
 
 /* ---------- Pestaña "Reporte" ---------- */
 
+/* Pestaña "Reporte": dos reportes distintos. "Levantamiento" es el de siempre; "Semanal" resume una semana de obra. */
 async function pestanaReporte(p) {
+  const cuerpo = $('#tab-body'); if (!cuerpo) return;
+  p.reporte = p.reporte || {};
+  const tipo = p.reporte.tipo === 'semanal' ? 'semanal' : 'levantamiento';
+  cuerpo.innerHTML = `<div class="segmentos" role="tablist" aria-label="Tipo de reporte">
+      <button role="tab" class="seg${tipo === 'levantamiento' ? ' activo' : ''}" data-rtipo="levantamiento" aria-selected="${tipo === 'levantamiento'}">Reporte de levantamiento</button>
+      <button role="tab" class="seg${tipo === 'semanal' ? ' activo' : ''}" data-rtipo="semanal" aria-selected="${tipo === 'semanal'}">Reporte semanal</button></div>
+    <div id="rp-cont" class="mt"></div>`;
+  $$('[data-rtipo]').forEach(b => b.addEventListener('click', async () => {
+    if (p.reporte.tipo === b.dataset.rtipo || (!p.reporte.tipo && b.dataset.rtipo === 'levantamiento')) return;
+    p.reporte.tipo = b.dataset.rtipo; p.actualizado = ahora(); await dbGuardar('proyectos', p); pestanaReporte(p);
+  }));
+  if (tipo === 'semanal') await pestanaReporteSemanal(p, $('#rp-cont'));
+  else await pestanaReporteLevantamiento(p);
+}
+
+async function pestanaReporteLevantamiento(p) {
   const espacios = (await dbPorProyecto('espacios', p.id))
     .sort((a, b) => (a.orden || 0) - (b.orden || 0) || (a.creado || '').localeCompare(b.creado || ''));
-  const cuerpo = $('#tab-body');
+  const cuerpo = $('#rp-cont') || $('#tab-body');
   if (!cuerpo) return;
   const o = opcionesReporte(p);
   const sel = new Set(o.sel || espacios.map(s => s.id));

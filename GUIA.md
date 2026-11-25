@@ -105,3 +105,15 @@ La pestaña **Avances** muestra cómo va la obra, sin dinero:
 - **PDF de avance:** etapas con su estado, avance general y semanas. Sirve para el cliente o para el trabajador.
 
 Las fotos, pagos y gastos siguen en **Obra**, y el contrato y la orden de trabajo en **Contrato**.
+
+## Reporte: dos opciones (Etapa 18)
+
+En la pestaña **Reporte** elige arriba cuál quieres:
+
+- **Reporte de levantamiento:** el de siempre (espacios, medidas, fotos, croquis, conceptos, presupuesto y firmas).
+- **Reporte semanal:** elige un día de la semana y baja el PDF de esa semana (lunes a domingo) con:
+  - el **avance por etapas** (antes, ahora y cambio contra la semana anterior, de la pestaña Avances),
+  - los **trabajos y fotos** de la bitácora de esa semana (pestaña Obra),
+  - los **pagos recibidos** esa semana (opcional; nunca salen gastos).
+
+Si la semana no está cerrada en Avances, se usan los porcentajes de hoy.

@@ -3,7 +3,7 @@
    guardado local y copia de seguridad. */
 'use strict';
 
-const VERSION_APP = '1.9.0 (Etapa 17: avances por etapas y semanas)';
+const VERSION_APP = '1.10.0 (Etapa 18: reporte semanal)';
 
 /* Íconos dibujados (la tipografía Lato no incluye ✓ ni ✕) */
 const ICONO_CHECK = '<svg class="ico-check" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>';
